@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>利用mutt的filter实现新邮件提醒</title>
+  <meta name="description" content="“All mail clients suck. This one just sucks less.”">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/05/mutt-filter-notify/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">利用mutt的filter实现新邮件提醒</h1>
+    <p class="post-meta"><time datetime="2010-05-05T20:50:35+08:00" itemprop="datePublished">May 5, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>“All mail clients suck. This one just sucks less.”</p>
+
+<p>mutt实在是强大, 千奇百怪的功能, 只有你想不到的, 没有不能实现的.</p>
+
+<p>mutt擅长和其它软件配合, 比如抓取邮件部分有人用fetchmail, 有人用getmail, 有人用内置pop3, 也有人像我一样用内置imap. 但都会遇到一个问题, 新邮件提醒, 这个问题上更是各显神通, inotify监视本地mailbox的, 安装各种notify软件的, 嵌在conky里的, 脚本抓取atom订阅配合cron的.</p>
+
+<p>第一种也可以, 就是有点麻烦, 有点小题大做. 而后面的几种解决方法我觉得都不太好, 因为如果是gmail, 就隔几分钟就登录gmail; 如果不是gmail, 基本上都不太容易实现. 我理想的新邮件通知是这样的: 只依靠mutt来检测, 能够改掉screen里mutt的title, 能跳出notify提示你有新邮件, 能配合声音, 能…</p>
+
+<p>解决问题的过程无非就是RTFM, 很好, mutt提供了一个filter的功能, <a href="http://www.mutt.org/doc/devel/manual.html#formatstrings-filters">http://www.mutt.org/doc/devel/manual.html#formatstrings-filters</a>, 简单说就是将status通过管道pipe到一个脚本, 这下好了, 你的status里设置上新邮件相关字符串, 脚本里一检测, 其它的问题就全都解决了.</p>
+
+<p>下面是我mutt中status_format的设置, manual中说了, 最后加上(“|”), 就将status字符串传递给第一个词, 也就是我指定的mutt-filter脚本. 顺便说一句, mutt没那么蠢, 当然是只有这个字符串变化了才会触发pipe的动作.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set status_format="mutt-filter '-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]----%&gt;-(%P)---'|"
+</code></pre></div></div>
+
+<p>下面是我的mutt-filter脚本, 我只改了screen的window title, 发了个notify, 想要声音的自己加上就是. 最后那行的echo “$1”是将字符串还给status, 要不只是pipe到脚本, status空了的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+if [[ "$1" =~ "All Mail" &amp;&amp; "$1" =~ "New:" ]];then
+	notify-send "Get new mails"
+	printf "\ekmutt: new\e\\" &gt; /dev/tty
+else
+	printf "\ekmutt\e\\" &gt; /dev/tty
+fi
+
+echo "$1"
+</code></pre></div></div>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

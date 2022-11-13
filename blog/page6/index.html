@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page6/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>Oct 30, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/10/first-patch/">第一个patch</a></h1>
+
+    <div class="content">
+      <p>今天很高兴, 我第一次提交patch就被接受了.</p>
+
+<p>事情是这样的: 前几天在挑图片浏览软件, 试用Qiv的过程中, 感觉几个地方不是很如意, 就看了下代码, 顺手打了个patch.</p>
+
+<p>补丁在<a href="https://bitbucket.org/ciberandy/qiv/changeset/4a6bd35ded10">这里</a>, 很简单, 十几行代码的事情. 未打补丁之前, 开启browser模式时, 参数里的文件会被显示两次; 开启了browser模式又没有指定排序模式的情况下, 参数中文件显示完之后会跳转到文件列表中的第一个而不是参数中文件在列表里的下一个. 打完patch之后应该用起来会比较顺手.</p>
+
+<p>这个修改会体现在Qiv 2.2.4版本中, 希望能给用Qiv的朋友带来方便.</p>
+
+<p>PS: 我后来并没有用Qiv而是选了Mirage, 之前用的是Geeqie.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 20, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/10/use-ftp-to-transfer/">用ftp互传文件</a></h1>
+
+    <div class="content">
+      <p>不知道大家都是怎么解决局域网内文件互传的, IPMsg(飞鸽传书)没有完美的Linux实现, Samba和NFS跨平台不好, Python的SimpleHTTPServer又不支持批量和文件夹. 所以在我看来, 最方便, 最快捷, 支持批量和文件夹, 跨平台最好的肯定是ftp.</p>
+
+<p>我选择的ftp服务器是vsftpd, 最后实现的结果是, 匿名且不需用户名和密码登录, 指定我自己的一个目录作为ftp根目录, 权限操作无障碍. 不错吧, 且看配置/etc/vsftpd.conf:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>write_enable=YES
+anonymous_enable=YES
+no_anon_password=YES
+anon_root=/path/to/share
+anon_umask=000
+anon_upload_enable=YES
+anon_mkdir_write_enable=YES
+anon_other_write_enable=YES
+</code></pre></div></div>
+
+<p>注意, vsftpd要求anon_root这个目录不能是777的权限, 所以我在它下面又建立了一个777权限的upload目录, 在upload下匿名ftp用户拥有一切权限. 还有, anon_root和其下的upload所有者都是我, 但是别人传上来的文件所有者都是ftp, 操作很不方便, 所以我把anon_umask设置为了000.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 14, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/10/touchpad-config/">配置Touchpad</a></h1>
+
+    <div class="content">
+      <p>为了彻底抛弃对于鼠标的依赖, 这几天先是改用了Awesome, 又手动打开了新版xorg(after 7.4)默认不开启的触摸板点击(tapping)功能.</p>
+
+<p>好消息是: 用于触摸板的synclient和syndaemon不再需要开启SHMConfig选项了. 所以只要在.xinitrc中加入下面两行就能满足我的需求:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>synclient TapButton1=1
+syndaemon -i 2 -k -d &amp;
+</code></pre></div></div>
+
+<p>第一行是启用点击, 第二行是用来防止敲击键盘时不小心碰到触摸板. 详细说明和方法请参考manual.</p>
+
+<p>另外, 如果想通过xorg.conf来配置, 较简单的方法是使用子配置目录以及用Match匹配设备的InputClass段, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/etc/X11/xorg.conf.d/50-synaptics.conf
+
+Section "InputClass"
+	Identifier "Touchpad"
+	MatchIsTouchpad "on"
+	Driver "synaptics"
+	Option "TapButton1" "1"
+	Option "TapButton2" "2"
+	Option "TapButton3" "3"
+	Option "VertEdgeScroll" "true"
+	Option "HorizEdgeScroll" "true"
+EndSection
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 13, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/10/awesome-notification/">Awesome下设置notification</a></h1>
+
+    <div class="content">
+      <p>Awesome下的notification是靠它自己的Naughty模块实现, 所以在Awesome下用notify-send发出的notification并不和你在别的窗口管理器下样式一致.</p>
+
+<p>如果你不喜欢默认样式, 可以override它的配置, Awesome的wiki(<a href="http://awesome.naquadah.org/wiki/Naughty">via</a>)中给出了方法, 例如我的:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>naughty.config.default_preset.font             = "sans 13.5"
+naughty.config.default_preset.position         = "bottom_right"
+naughty.config.default_preset.fg               = beautiful.fg_focus
+naughty.config.default_preset.bg               = beautiful.bg_focus
+naughty.config.default_preset.border_color     = beautiful.border_focus
+</code></pre></div></div>
+
+<p>需要注意的是, 如果你像我一样引用了诸如beautiful.fg_focus之类的变量, 记得把这几行配置放到beautiful.init之后.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 13, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/10/beginning-awesome/">开始用Awesome</a></h1>
+
+    <div class="content">
+      <p>前几天终于挪出点时间把Awesome好好配置了下, 用起来实在是舒服, 不用鼠标了, 操作快了, 手也不疼了, 我的小桌子上也可以同时放笔记本和书了. ^_^</p>
+
+<p>除了它是平铺窗口管理器, Awesome最棒的地方是基于lua的配置语言, 更灵活更强大, 个人感觉和Fvwm一个量级, 但比Fvwm更容易理解和配置.</p>
+
+<p>clean:
+<img src="http://adam8157.info/uploads/2010/10/awesome_shot_clean.jpg" alt="" /></p>
+
+<p>dirty:
+<img src="http://adam8157.info/uploads/2010/10/awesome_shot_dirty.jpg" alt="" /></p>
+
+<p>PS: 配置已经上传, 还是在这里: <a href="http://adam8157.info/projects/">http://adam8157.info/projects/</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Sep 23, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/09/no-recommends-in-apt/">无视Recommends</a></h1>
+
+    <div class="content">
+      <p>话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里.</p>
+
+<p>所以我安装完基本Debian系统后的第一个操作就是对apt进行设置, 避免装上Recommends域的包, 像这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt; EOF | sudo tee /etc/apt/apt.conf.d/90no-recommends
+APT
+{
+	Install-Recommends 0;
+};
+EOF
+</code></pre></div></div>
+
+<p>可惜我很久之前就发现了一个问题, 一直没有解决, 例如: A depends C, B recommends C, 我将A卸载之后, 再执行autoremove操作, C却并不会被卸载掉, 因为apt将Recommends视作依赖了. 总之, 虽然我安装的时候不会去装Recommends域的包, 但是还是有可能会因为别的操作而装上这些对我来说不必要的包.</p>
+
+<p>大概纠结了一年多这个问题, 今天终于找到了解决办法:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt; EOF | sudo tee /etc/apt/apt.conf.d/90no-recommends
+APT
+{
+	Install-Recommends 0;
+	AutoRemove
+	{
+		RecommendsImportant 0;
+	}
+};
+EOF
+</code></pre></div></div>
+
+<p>顺便抱怨下apt的文档, /usr/share/doc/apt/examples/configure-index.gz中所谓的全部选项根本不全, 我现在已经忘了我在哪个犄角旮旯搜索到这个的了…</p>
+
+<p>PS: 1, autoremove不危险, 前提是你对apt的包管理体系很熟悉. 2, 我知道aptitude有Keep-Recommends的配置选项, 但是我个人不喜欢用aptitude.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Sep 8, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/09/libraries-link-order/">静态库的链接顺序</a></h1>
+
+    <div class="content">
+      <p>今天工作中遇到了一个很诡异的问题:</p>
+
+<p>项目中, a.c和b.c编译出的obj先打包成静态库c.a, 再和另外一个d.a以及main.c编译出的obj链接成最后的bin文件. a.c中有private_init()和private_read()两个函数, 其中private_init()是个空函数, private_read()则在d.a中被调用.</p>
+
+<p>出现的现象是这样: 如果我main.c中不调用那两个函数, 最后就会链接报错 undefined reference to ‘private_read’, 但如果我在main.c中调用其中一个, 即使只是调用空函数private_init(), 链接也会正常完成. 更诡异得是, Makefile中的链接参数是”-lc -ld”, 但如果改成”-ld -lc”, 现象就消失了.</p>
+
+<p>想了半天没想明白, 最后翻了下_Linkers &amp; Loaders_ by John R. Levine, 终于找到了答案:</p>
+
+<blockquote>
+  <p>Searching libraries</p>
+
+  <p>After a library is created, the linker has to be able to search it. Library search generally happens during the first linker pass, after all of the individual input files have been read. If the library or libraries have symbol directories, the linker reads in the directory, and checks each symbol in turn against the linker’s symbol table. If the symbol is used but undefined, the linker includes that symbol’s file from the library. It’s not enough to mark the file for later loading; the linker has to process the symbols in the segments in the library file just like those in an explicitly linked file. The segments go in the segment table, and the symbols, both defined and undefined are entered into the global symbol table. It’s quite common for one library routine to refer to symbols in another library routine, for example, a higher level I/O routine like printf might refer to a lower level putc or write routine.</p>
+
+  <p>Library symbol resolution is an interative process. After the linker has made a pass over the symbols in the directory, if it included any files from the library during that pass, it should make another pass to resolve any symbols required by the included files, until it makes a complete pass over the directory and finds nothing else to include. Not all linkers do this; many just make a single sequential pass over the directory and miss any backwards dependencies from a file to another file earlier in the library. Tools like tsort and lorder can minimize the difficulty due to single-pass linkers, but it’s not uncommon for programmers to explcitly list the same library several times on the linker command line to force multiple passes and resolve all the symbols.</p>
+
+  <p>Unix linkers and many Windows linkers take an intermixed list of object files and libraries on the command line or in a control file, and process each in order, so that the programmer can control the order in which objects are loaded and libraries are searched. Although in principle this offers a great deal of flexibility and the ability to interpose private versions of library routines by listing the private versions before the library versions, in practice the ordered search provides little extra utility. Programmers invariably list all of their object files, then any application-specific libraries, then system libraries for math functions, network facilities and the like, and finally the standard system libraries.</p>
+
+  <p>When programmers use multiple libraries, it’s often necessary to list libraries more than once when there are circular dependencies among libraries. That is, if a routine in library A depends on a routine in library B, but another routine in library B depends on a routine in library A, neither searching A followed by B or B followed by A will find all of the required routines. The problem becomes even worse when the dependencies involve three or more libraries. Telling the linker to search A B A or B A B, or sometimes even A B C D A B C D is inelegant but solves the problem. Since there are rarely any duplicated symbols among the libraries, if the linker simply searched them all as a group as IBM’s mainframe linkers and AIX linker do, programmers would be well served.</p>
+</blockquote>
+
+<p>简单说就是: 传统的Unix编译环境下, 静态库的加载是顺序搜索一遍, 遇到没链接的函数就记下, 如果这个函数在后面的库或obj中出现了, 链接器就会把这个函数所在的obj链接过去, 不包含未链接函数的obj就会被忽略过去(静态库也只是obj的简单打包而已).</p>
+
+<p>于是, “-lc”的时候, 因为那两个函数在main.c中都没有被调用, 链接器就把a.o略过去了, “-ld”的时候虽然有了a.o中函数的调用, 但链接器已经把它给略过去, 找不到了.</p>
+
+<p>所以如果库A依赖库B, 链接的顺序就应该写为A B, 如果相互依赖就应该为A B A或者B A B的顺序.</p>
+
+<p>PS: 我查了一下, 大多现代的编译链都不会有这个问题, 但是传统, 标准以及我手里的这个编译链却都是这样的, 为了通用, 以后还是注意点吧.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Sep 2, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/09/wordpress-comment-autofill/">WordPress评论的自动填表</a></h1>
+
+    <div class="content">
+      <p>嗯, 我是一个”洁癖症”患者.</p>
+
+<p>我喜欢评论, 我喜欢清理Cookie, 我不喜欢装很多插件. So, 总是麻麻烦烦地把名字, 邮箱和网址挨个敲进去.</p>
+
+<p>可是, 我也很懒. 于是搜索到了<a href="http://neolee.com/wordpress/recommend-a-wordpress-message-automatically-fill-in-a-form-of-small-bookmark/">这个东西</a>(via neolee.com), 很不错, 很方便.</p>
+
+<p>简单说, 就是把下面的代码保存为书签, 需要填的时候点一下就好.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>javascript:(function(){document.getElementById('author').value='名字';document.getElementById('email').value='邮箱';document.getElementById('url').value='网址';})()
+</code></pre></div></div>
+
+<p>PS: 记得把相应的内容改成你自己的, and, enjoy it.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Aug 15, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/08/set-qt-theme/">设置Qt主题</a></h1>
+
+    <div class="content">
+      <p>非KDE环境下的Qt4程序默认主题, 实在是丑.</p>
+
+<p>我有两个比较常用的Qt程序: SMPlayer和VirtualBox, 自从它俩升级至Qt4后我就一直在忍受那个丑陋的默认主题, 而今天, 终于忍不住动手调整了下.</p>
+
+<p>方法嘛, Debian用户安装qt4-qtconfig, 运行qtconfig就是了, 一目了然. 当然, 对于我来说, 装这么个东西外加那么多依赖是不可以接受的, 目的只是为了搞清楚配置文件的位置和写法, 呵呵.</p>
+
+<p>废话少说, 配置文件位于~/.config/Trolltech.conf</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[Qt]
+style=Cleanlooks
+font="Sans Serif,9,-1,5,50,0,0,0,0,0"
+</code></pre></div></div>
+
+<p>最主要的主题和字体配置语句如上, Cleanlooks是默认带的, 个人觉得挺好. 另外, 指定主题为”GTK+”则会使用QGtkStyle特性让Qt使用当前的Gtk主题, 可惜我这里会报错”QGtkStyle was unable to detect the current GTK+ theme.”</p>
+
+<hr />
+
+<p>好了, 可以把qt4-qtconfig卸载了.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Aug 8, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/08/use-bc-to-calculate/">好用的bc</a></h1>
+
+    <div class="content">
+      <p>最近搞的东西需要算很多偏移量之类的东西, 又多又烦. 还好, 在被Windows自带的计算器逼疯之前, 我改用了bc.</p>
+
+<p>bc实际上是一种无限精度的计算语言, 可以赋值, 可以循环, 可以判断, 可以打印, 可以编写脚本. 不过我没有玩得那么花, 只是用来计算一些简单的式子而已, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo '300+(525*5)-900+25^2' | bc
+echo 'scale=3;100/(125-68)' | bc
+echo 'obase=16;ibase=10;2*1024*1024+512*1024' | bc
+</code></pre></div></div>
+
+<p>都很简单, 只解释两点:<br />
+1, scale代表小数位数, 涉及到除法的时候最好加上, 否则会对齐输入数字中最长的小数位数.<br />
+2, obase代表输出进位制, ibase代表输入进位制, 默认都是十进制. 建议把obase写在前面, 否则二进制输入十进制输出”obase=10;ibase=2;”就得写成”ibase=2;obase=1010;”了, 呵呵.</p>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page5/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <em>6</em>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page7/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

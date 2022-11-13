@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>What is dentry</title>
+  <meta name="description" content="dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2014/04/what-is-dentry/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">What is dentry</h1>
+    <p class="post-meta"><time datetime="2014-04-02T16:00:00+08:00" itemprop="datePublished">Apr 2, 2014</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中.</p>
+
+<h2 id="dentry的结构">dentry的结构</h2>
+
+<p>dentry结构的定义(linux/include/dcache.h)如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct dentry {
+        /* RCU lookup touched fields */
+        unsigned int d_flags;           /* protected by d_lock */
+        seqcount_t d_seq;               /* per dentry seqlock */
+        struct hlist_bl_node d_hash;    /* lookup hash list */
+        struct dentry *d_parent;        /* parent directory */
+        struct qstr d_name;
+        struct inode *d_inode;          /* Where the name belongs to - NULL is
+                                         * negative */
+        unsigned char d_iname[DNAME_INLINE_LEN];        /* small names */
+
+        /* Ref lookup also touches following */
+        struct lockref d_lockref;       /* per-dentry lock and refcount */
+        const struct dentry_operations *d_op;
+        struct super_block *d_sb;       /* The root of the dentry tree */
+        unsigned long d_time;           /* used by d_revalidate */
+        void *d_fsdata;                 /* fs-specific data */
+
+        struct list_head d_lru;         /* LRU list */
+        /*
+         * d_child and d_rcu can share memory
+         */
+        union {
+                struct list_head d_child;       /* child of parent list */
+                struct rcu_head d_rcu;
+        } d_u;
+        struct list_head d_subdirs;     /* our children */
+        struct hlist_node d_alias;      /* inode alias list */
+};
+</code></pre></div></div>
+
+<p>这其中比较基本和重要的成员是d_parent, d_child, d_name和d_inode, 分别用来记录上级目录, 下级成员(如果当前dentry为目录文件), 文件名以及所指向的inode.</p>
+
+<h2 id="dentry如何形成树状结构">dentry如何形成树状结构</h2>
+
+<p>区别于记录文件数据的inode, dentry只用来记录文件的组织和管理信息. 路径就是由多个dentry连接而成的, 例如/home/user/foo路径中的根目录/, 目录home, 目录user和文件foo各自都是一个dentry结构. 所有的dentry索引起来就形成了文件系统的树状结构.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

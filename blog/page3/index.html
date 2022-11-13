@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page3/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>May 1, 2012</span>
+    </p>
+
+    <h1><a href="/blog/2012/05/use-luks-to-encrypt-block-devices/">用LUKS/dm-crypt加密块设备</a></h1>
+
+    <div class="content">
+      <h2 id="what-and-how">What and How</h2>
+
+<p>LUKS是Linux下块设备加密的标准组件, 不同于文件系统级别的eCryptfs等, LUKS更底层, 也更方便.</p>
+
+<p>用LUKS建立加密分区很简单, 只需安装cryptsetup, 然后执行下面的命令按提示设置密码就可以了, 建议不加额外参数, 选用默认的加密算法, 效率不会差太多, 但是更安全.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cryptsetup luksFormat /dev/sdXY
+</code></pre></div></div>
+
+<p>打开加密分区的命令如下, 验证成功后会在/dev/mapper/下生成名为foo的块设备, 之后建立文件系统, 挂载, 卸载等操作和普通的块设备一致.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cryptsetup luksOpen /dev/sdXY foo
+</code></pre></div></div>
+
+<p>关闭加密分区也很简单, 先卸载foo, 然后执行下面的命令就是了:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cryptsetup luksClose /dev/mapper/foo
+</code></pre></div></div>
+
+<h2 id="加密现有linux系统">加密现有Linux系统</h2>
+
+<p>基于安全的考虑, 我把笔记本上现有的Linux系统迁移到了LVM over LUKS的环境, 必要的操作有下面这几个:</p>
+
+<ol>
+  <li>备份boot, root, home等分区</li>
+  <li>建立LVM over LUKS分区环境</li>
+  <li>恢复boot, root, home等分区</li>
+  <li>修改grub, fstab, crypttab</li>
+  <li>重新生成initramfs</li>
+</ol>
+
+<p>因为这些操作都比较危险, 我就不详细说了, 具体可以参考<a href="https://wiki.archlinux.org/index.php/System_Encryption_with_LUKS">这里</a>和<a href="http://ada.adrianlang.de/existing-debian-luks">这里</a>.</p>
+
+<h2 id="自动挂载已加密移动硬盘">自动挂载已加密移动硬盘</h2>
+
+<p>另外, 我也把移动硬盘加密了, udev的自动挂载规则贴在下面, 依赖pmount, 能够自动弹出终端以便于输入密码验证.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>KERNEL!="sd[b-z]*", GOTO="automount_exit"
+
+ACTION=="add", SUBSYSTEM=="block", PROGRAM=="/sbin/blkid -o value -s TYPE %N", RESULT!="crypto_LUKS", RUN+="/bin/su adam -c '/usr/bin/pmount %k'"
+ACTION=="add", SUBSYSTEM=="block", PROGRAM=="/sbin/blkid -o value -s TYPE %N", RESULT=="crypto_LUKS", RUN+="/bin/su adam -c '/usr/bin/xterm -display :0.0 -e /usr/bin/pmount %k'"
+
+ACTION=="remove", SUBSYSTEM=="block", RUN+="/bin/su adam -c '/usr/bin/pumount %k'"
+
+LABEL="automount_exit"
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Apr 5, 2012</span>
+    </p>
+
+    <h1><a href="/blog/2012/04/setup-kernel-developing-environment/">搭建内核开发调试环境</a></h1>
+
+    <div class="content">
+      <p>闲来无事, 总结一下内核开发调试环境的搭建过程, 希望能对和我一样的内核新手们有所帮助.</p>
+
+<h2 id="方案">方案</h2>
+<p>我的测试系统在QEMU中运行, Host和Guest的架构都是x86_64, 用Busybox生成的initrd做为根文件系统, KGDB做为调试器.</p>
+
+<h2 id="生成内核">生成内核</h2>
+<p>内核中需要打开的选项是<code class="language-plaintext highlighter-rouge">CONFIG_EXPERIMENTAL</code>, <code class="language-plaintext highlighter-rouge">CONFIG_DEBUG_INFO</code>, <code class="language-plaintext highlighter-rouge">CONFIG_KGDB</code>和<code class="language-plaintext highlighter-rouge">CONFIG_KGDB_SERIAL_CONSOLE</code>, 同时需要关闭<code class="language-plaintext highlighter-rouge">CONFIG_DEBUG_RODATA</code>选项. 然后<code class="language-plaintext highlighter-rouge">make bzImage</code>编译生成内核. 具体选项的意义可以去翻内核文档, 这里就不罗嗦了.</p>
+
+<h2 id="生成根文件系统">生成根文件系统</h2>
+<p>打开Busybox的<code class="language-plaintext highlighter-rouge">CONFIG_STATIC</code>和<code class="language-plaintext highlighter-rouge">CONFIG_INSTALL_NO_USR</code>选项, 执行<code class="language-plaintext highlighter-rouge">make</code>和<code class="language-plaintext highlighter-rouge">make install</code>编译并生成, 然后参照下面的步骤创建initrd根文件系统:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir temp &amp;&amp; cd temp
+
+#创建系统目录
+mkdir -p dev etc/init.d mnt proc root sys tmp
+chmod a+rwxt tmp
+
+cp -rf ../busybox/_install/* ./
+
+#挂载系统目录
+cat &lt;&lt; EOF &gt; etc/fstab
+proc  /proc  proc  defaults  0  0
+sysfs  /sys  sysfs defaults  0  0
+tmpfs  /tmp  tmpfs defaults  0  0
+EOF
+
+cat &lt;&lt; EOF &gt; etc/inittab
+::sysinit:/etc/init.d/rcS
+::respawn:-/bin/sh
+tty2::askfirst:-/bin/sh
+::ctrlaltdel:/bin/umount -a -r
+EOF
+
+cat &lt;&lt; EOF &gt; etc/init.d/rcS
+#!bin/sh
+/bin/mount -a
+#用mdev生成设备文件
+/sbin/mdev -s
+EOF
+
+chmod 755 etc/init.d/rcS
+
+find ./ | cpio -o -H newc | gzip &gt; ../rootfs.img
+</code></pre></div></div>
+
+<h2 id="启动qemu">启动QEMU</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>qemu-system-x86_64 -kernel kernel.img -append \
+"root=/dev/ram rdinit=/sbin/init" -initrd rootfs.img 或
+qemu-system-x86_64 -kernel kernel.img -append \
+"root=/dev/ram rdinit=/sbin/init kgdboc=ttyS0,115200 kgdbwait" \
+-initrd rootfs.img -serial tcp::1234,server 第二个命令开启了KGDB, 将Guest系统的串口映射到了Host系统的1234端口, 并在启动过程中等待gdb的连接.
+</code></pre></div></div>
+
+<h2 id="启动gdb">启动gdb</h2>
+<p>内核开启KGDB的情况下, 执行<code class="language-plaintext highlighter-rouge">gdb vmlinux</code>, 其中vmlinux是未压缩的内核. 然后<code class="language-plaintext highlighter-rouge">target remote localhost:1234</code>连接kgdb.</p>
+
+<p>接下来就和普通的gdb没什么大的区别了, 比如在sched_clock函数处设置断点<code class="language-plaintext highlighter-rouge">break sched_clock</code>, <code class="language-plaintext highlighter-rouge">continue</code>继续运行, 到达断点后打印jiffies_64变量<code class="language-plaintext highlighter-rouge">print jiffies_64</code>等等.</p>
+
+<p>另外, 运行过程中可以在测试系统里执行<code class="language-plaintext highlighter-rouge">echo g &gt; /proc/sysrq-trigger</code>让gdb重新得到控制权.</p>
+
+<h2 id="for-懒人">For 懒人</h2>
+<p>顺手在github上建了个项目, 可以自动搭建整个内核开发调试环境, 详见README.</p>
+
+<p><a href="http://github.com/adam8157/kernel-studio">http://github.com/adam8157/kernel-studio</a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git://github.com/adam8157/kernel-studio.git
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Feb 9, 2012</span>
+    </p>
+
+    <h1><a href="/blog/2012/02/migration-to-octopress/">迁移到Octopress</a></h1>
+
+    <div class="content">
+      <p>长久以来我就对Wordpress有着诸多不满: 冗余, 速度慢, 非静态, 依赖数据库, 迁移成本高… 但是苦于没有合适的替代品, 只能忍受. 直到我最近发现了<a href="http://octopress.org/">Octopress</a>.</p>
+
+<h2 id="什么是octopress">什么是Octopress</h2>
+
+<p>Octopress是一个基于<a href="http://jekyllrb.com/">Jekyll</a>的静态博客生成系统</p>
+
+<h2 id="octopress有什么优点">Octopress有什么优点</h2>
+
+<ul>
+  <li>
+    <p>纯静态: 最终发布的只有HTML, Javascript和CSS</p>
+  </li>
+  <li>
+    <p>Markdown: 使用Markdown作为源文件语言, 易写易读</p>
+  </li>
+  <li>
+    <p>搭建方便: 简洁的Ruby框架, 操作十分简单方便</p>
+  </li>
+  <li>
+    <p>迁移成本低: 因为是静态网页, 对主机要求低, 且迁移方便</p>
+  </li>
+  <li>
+    <p>版本控制友好: 整个项目和文章源代码都是纯文本(图片等除外), 方便版本控制</p>
+  </li>
+</ul>
+
+<h2 id="如何搭建和迁移">如何搭建和迁移</h2>
+
+<ul>
+  <li>
+    <p>搭建请参考<a href="http://octopress.org/docs/">Octopress Documentation</a></p>
+  </li>
+  <li>
+    <p>迁移请参考<a href="https://github.com/mojombo/jekyll/wiki/blog-migrations">Jekyll的wiki</a>, 我的方案是用<a href="https://github.com/thomasf/exitwp">Exitwp</a>迁移文章, 用Wordpress的<a href="http://wordpress.org/extend/plugins/disqus-comment-system/">Disqus插件</a>迁移评论</p>
+  </li>
+</ul>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Feb 2, 2012</span>
+    </p>
+
+    <h1><a href="/blog/2012/02/markdown-is-nice/">Markdown真不错</a></h1>
+
+    <div class="content">
+      <p>Markdown是个轻量级的标记语言, 容易读, 容易写. 具体的介绍和语法可以去<a href="http://daringfireball.net/projects/markdown/">项目主页</a>查看.</p>
+
+<p>除了直接在某些网站(例如github)上使用, 还可以通过pandoc把Markdown文件转换成HTML, MediaWiki, LaTeX, 甚至Groff, Texinfo, DocBook, OpenDocument, EPUB. 更厉害的是, pandoc还可以套用LaTeX模板和CSS样式表, 真乃神器!</p>
+
+<p>于是我参考<a href="http://www.music.mcgill.ca/~sinclair/content/blog/using_markdown_for_beamer_presentations">这里</a>写了个幻灯片模板, 调用pandoc和latex生成pdf, 相当舒服.</p>
+
+<p><img src="http://adam8157.info/uploads/2012/02/markdown2slides.png" alt="" /></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Dec 26, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/12/use-vundle-to-manage-vim-plugins/">用Vundle管理Vim插件</a></h1>
+
+    <div class="content">
+      <p>一直以来, 管理Vim插件对我来说都是个困扰, 安装, 更新和卸载, 一个比一个麻烦. 我也尝试过很多插件管理工具, 但是都不如意, 直至遇到了<a href="https://github.com/gmarik/vundle">Vundle</a>.</p>
+
+<p>Vundle利用git, 插件的git repo以及<a href="http://vim-scripts.org">vim-scripts</a>维护的<a href="https://github.com/vim-scripts">GitHub repo</a>, 自动安装, 更新和卸载插件. 它把这些繁杂的工作变得简单, 甚至, 成为一种享受.</p>
+
+<p>Vundle的安装同样方便, 只需要执行:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone http://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+</code></pre></div></div>
+
+<p>然后将下列代码加入vimrc中即可.
+(插件名字由git repo决定, 可以在<a href="http://vim-scripts.org/vim/scripts.html">http://vim-scripts.org/vim/scripts.html</a>页面中查找)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set nocompatible    " be iMproved
+filetype off        " required!
+
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+" let Vundle manage Vundle
+" required!
+Bundle 'gmarik/vundle'
+
+" vim-scripts repos
+Bundle 'vim-plugin-foo'
+Bundle 'vim-plugin-bar'
+
+filetype plugin indent on    " required!
+</code></pre></div></div>
+
+<p>然后, 安装插件:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:BundleInstall
+</code></pre></div></div>
+
+<p>更新插件:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:BundleInstall!
+</code></pre></div></div>
+
+<p>卸载不在列表中的插件:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:BundleClean
+</code></pre></div></div>
+
+<p>就是这么简单, 方便. Enjoy it!</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Dec 19, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/12/kindle-touch-change-fonts/">Kindle Touch一键换字体</a></h1>
+
+    <div class="content">
+      <p>今天忍不住把Kindle Touch的字体给换了, 效果如图:</p>
+
+<p><img src="http://adam8157.info/uploads/2011/12/kindle_touch_microhei.png" alt="" /></p>
+
+<p>顺手搞了个一键替换或还原字体的越狱包, 参考了别人的方案(ref 4), <strike>感兴趣的朋友可以点此下载</strike>.</p>
+
+<p>ref:<br />
+1, <a href="http://yifan.lu/">http://yifan.lu/</a><br />
+2, <a href="http://irising.me/2011/12/12591/">http://irising.me/2011/12/12591/</a><br />
+3, <a href="http://irising.me/2011/12/12600/">http://irising.me/2011/12/12600/</a><br />
+4, <a href="http://www.duokan.com/forum/thread-51409-1-1.html">http://www.duokan.com/forum/thread-51409-1-1.html</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Dec 13, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/12/ustc-vim-speech/">在中科大关于Vim的演讲</a></h1>
+
+    <div class="content">
+      <p>上周末受朋友邀请, 去中科大讲了下Vim相关的东西. 感谢熊老师和USTC LUG的各位同学的安排和组织.</p>
+
+<p><img src="http://adam8157.info/uploads/2011/12/ustc_vim_slides.png" alt="" /></p>
+
+<p>Slides改自<a href="http://c9s.blogspot.com/">林佑安</a>的VIM Hacks, 遵循Creative Commons 3.0协议, 可从<a href="http://adam8157.info/uploads/2011/12/vim_rocks_slides.zip">此处下载</a>.</p>
+
+<p>PS: roylez关于ZSH的Slides在此: <a href="http://roylez.heroku.com/2011/12/12/ustc-zsh-speech.html">http://roylez.heroku.com/2011/12/12/ustc-zsh-speech.html</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 27, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/11/about-subkeys/">关于子密钥</a></h1>
+
+    <div class="content">
+      <p>子密钥, 和主密钥绑定的密钥对. 它不麻烦, 很有用. 而且, 你已经在用了.</p>
+
+<p>按照默认规则生成一个新密钥对, 在GnuPG控制台下list, 会有类似这样的输出:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pub  4096R/12345FOO  created: 2001-01-01  expires: never       usage: SC
+                     trust: ultimate      validity: ultimate
+sub  4096R/54321BAR  created: 2001-01-01  expires: never       usage: E
+</code></pre></div></div>
+
+<p>可以看到, 新生成的密钥包含一个主密钥, 作用是签名, 而且还包含一个子密钥, 作用是加密.</p>
+
+<p>使用子密钥的好处在于能够更换签名或者加密密钥, 而不破坏主密钥的关系网络和Key ID. 除了默认生成的用来加密的子密钥外, 你还可以添加更多的子密钥, 用来签名或者用来加密. 它们的公钥会随着主密钥的公钥发布, 方便其他人验证或者加密.</p>
+
+<p>ref:<br />
+1, <a href="http://www.gnupg.org/gph/en/manual.html">http://www.gnupg.org/gph/en/manual.html</a><br />
+2, <a href="http://wiki.debian.org/subkeys">http://wiki.debian.org/subkeys</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 9, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/11/upgraded-my-pgp-key/">Upgraded my PGP key</a></h1>
+
+    <div class="content">
+      <p>For security reasons, upgraded my PGP/GPG key to 4096-bit RSA.</p>
+
+<p>Key ID: 2F39D84D<br />
+Key fingerprint: BB13 C3CE A321 09A1 B93C  BF49 2365 E976 2F39 D84D</p>
+
+<p>ref: <a href="https://lkml.org/lkml/2011/9/30/421">https://lkml.org/lkml/2011/9/30/421</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 30, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/10/remove-the-www-subdomain/">Remove the www subdomain</a></h1>
+
+    <div class="content">
+      <p>The www subdomain is redundant and meaningless.</p>
+
+<p>为了保持链接兼容, 我把使用www的链接301永久重定向到了主域名.</p>
+
+<p>域名A记录指向IP, 再创建一个CNAME把www指向A记录, 然后在.htaccess中添加如下规则即可.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+</code></pre></div></div>
+
+<p>PS: 各位交换了友情链接的朋友可以顺手改下, 虽然不改也没什么影响 :)</p>
+
+<p>ref: <a href="http://no-www.org/">http://no-www.org/</a></p>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page2/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <em>3</em>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page4/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

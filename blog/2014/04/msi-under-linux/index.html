@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>MSI under Linux</title>
+  <meta name="description" content="什么是MSI">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2014/04/msi-under-linux/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">MSI under Linux</h1>
+    <p class="post-meta"><time datetime="2014-04-07T17:00:00+08:00" itemprop="datePublished">Apr 7, 2014</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="什么是msi">什么是MSI</h2>
+
+<p>MSI(Message Signaled Interrupts)是一种中断形式, 依靠设备将约定数据写入指定地址来通知CPU中断的产生.</p>
+
+<p>MSI从PCI 2.2开始支持, 在PCI 3.0中得到扩展. 支持更多中断以及拥有独立配置各个中断能力的MSI-X则从PCI 3.0开始被支持.</p>
+
+<h2 id="msi的优点">MSI的优点</h2>
+
+<p>相对基于引脚的中断响应方式, 首先MSI支持更多的中断且不需要复用, 其次启用MSI的设备的数据写入和中断触发是串行的, 驱动接收到中断信号的时候就可以确定数据已经准备就绪, 而不需要检查相应设备的寄存器, 这提升了性能.</p>
+
+<h2 id="如何在linux下使用msi">如何在Linux下使用MSI</h2>
+
+<p>PCI设备默认以基于引脚的中断响应方式初始化, 然后由驱动来检测是否支持MSI并决定是否启用, 如果启用MSI失败则会回退到基于引脚的中断响应方式. 下面是关于MSI的几个重要的内核函数:</p>
+
+<p>启用MSI并给设备分配一个中断:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int pci_enable_msi(struct pci_dev *dev)
+</code></pre></div></div>
+
+<p>允许驱动申请minvec至maxvec个中断:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
+</code></pre></div></div>
+
+<p>获取设备申请的中断向量个数:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int pci_msi_vec_count(struct pci_dev *dev)
+</code></pre></div></div>
+
+<p>禁用MSI, 回退到基于引脚的中断响应方式:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void pci_disable_msi(struct pci_dev *dev)
+</code></pre></div></div>
+
+<h2 id="ref">ref:</h2>
+<p>1, <a href="https://en.wikipedia.org/wiki/Message_Signaled_Interrupts">https://en.wikipedia.org/wiki/Message_Signaled_Interrupts</a><br />
+2, <a href="https://www.kernel.org/doc/Documentation/PCI/MSI-HOWTO.txt">https://www.kernel.org/doc/Documentation/PCI/MSI-HOWTO.txt</a></p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

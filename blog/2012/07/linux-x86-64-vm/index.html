@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Linux在x86-64下的虚拟内存布局</title>
+  <meta name="description" content="普通x86架构下的Linux内存布局大家应该都很清楚了. 物理内存分为ZONE_DMA, ZONE_NORMAL和ZONE_HIGHMEM三个区, 虚拟内存则一般是0-3G为用户空间, 3G-(4G-1)为内核空间. 那么, x86-64架构下呢?">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2012/07/linux-x86-64-vm/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Linux在x86-64下的虚拟内存布局</h1>
+    <p class="post-meta"><time datetime="2012-07-08T15:00:00+08:00" itemprop="datePublished">Jul 8, 2012</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>普通x86架构下的Linux内存布局大家应该都很清楚了. 物理内存分为ZONE_DMA, ZONE_NORMAL和ZONE_HIGHMEM三个区, 虚拟内存则一般是0-3G为用户空间, 3G-(4G-1)为内核空间. 那么, x86-64架构下呢?</p>
+
+<h2 id="有多大">有多大</h2>
+
+<p>首先, 目前大部分的操作系统和应用程序并不需要16EB( 2^64 )如此巨大的地址空间, 实现64位长的地址只会增加系统的复杂度和地址转换的成本, 带不来任何好处. 所以目前的x86-64架构CPU都遵循AMD的Canonical form, 即只有虚拟地址的最低48位才会在地址转换时被使用, 且任何虚拟地址的48位至63位必须与47位一致(sign extension). 也就是说, 总的虚拟地址空间为256TB( 2^48 ).</p>
+
+<h2 id="如何布局">如何布局</h2>
+
+<p>然后, 在这256TB的虚拟内存空间中, 0000000000000000 - 00007fffffffffff(128TB)为用户空间, ffff800000000000 - ffffffffffffffff(128TB)为内核空间. 这里需要注意的是, 内核空间中有很多空洞, 越过第一个空洞后, ffff880000000000 - ffffc7ffffffffff(64TB)才是直接映射物理内存的区域, 也就是说默认的PAGE_OFFSET为ffff880000000000. 从这里我们也可以看出, 这么大的直接映射区域足够映射所有的物理内存, 所以目前x86-64架构下是不存在高端内存, 也就是ZONE_HIGHMEM这个区域的(<a href="http://adam8157.info/blog/2011/03/about-highmem">参考这篇</a>).</p>
+
+<h2 id="如何映射">如何映射</h2>
+
+<p>64位寻址模式是PAE的扩展. 页大小支持PAE所支持的4K和2M, 以及独有的1G. 页表分为4级, 不但扩展了PAE的Page-Directory Pointer Table, 还添加了一个Page-Map Level 4(PML4)映射表. 巧妙之处在于, 这个表不但可以通过扩展来支持以后的完整64位地址空间, 也兼容很有可能出现的第5级页表.</p>
+
+<h2 id="ref">ref:</h2>
+<p>1, <a href="https://en.wikipedia.org/wiki/X86-64">https://en.wikipedia.org/wiki/X86-64</a><br />
+2, <a href="https://en.wikipedia.org/wiki/Physical_Address_Extension">https://en.wikipedia.org/wiki/Physical_Address_Extension</a><br />
+3, <a href="http://lxr.linux.no/#linux+v3.4/Documentation/x86/x86_64/mm.txt">http://lxr.linux.no/#linux+v3.4/Documentation/x86/x86_64/mm.txt</a></p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

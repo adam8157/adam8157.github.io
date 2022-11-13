@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page8/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>May 23, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/terminal-bash-screen/">terminal, bash和screen的配合</a></h1>
+
+    <div class="content">
+      <p>首先, 术业有专攻, 命令行和图形界面不是水火不容, 我都用的很多, 少了哪个也不行.</p>
+
+<p>其中关于命令行, 我基本上不进console, 毕竟分辨率, 字体, 中文什么的都比较恼火. 自己电脑就是xterm+screen+bash, 办公室就是用putty+ssh+screen+bash. 想要有一个舒服的使用环境, 就得把这几个家伙配合好.</p>
+
+<p>想要实现一个什么效果呢? 最好运行screen的时候, 每个window的title为路径或者当前运行的程序, xterm的title为screen: 加上当前window的title; 而单独运行xterm的时候, xterm的title为user@host: path. 比较晕是吧? 看我的效果图:</p>
+
+<p><img src="http://adam8157.info/uploads/2010/05/screen_path.png" alt="" />
+<img src="http://adam8157.info/uploads/2010/05/screen_program.png" alt="" />
+<img src="http://adam8157.info/uploads/2010/05/xterm_path.png" alt="" /></p>
+
+<p>下面是一些关键的配置, 其它部分在此: <a href="https://github.com/adam8157/dotfiles">https://github.com/adam8157/dotfiles</a></p>
+
+<p>bash的.bashrc:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#screen and xterm's dynamic title
+case $TERM in
+	xterm*)
+		# Set xterm's title
+		TITLEBAR='\[\e]0;\u@\h:\w\a\]'
+		PS1="${TITLEBAR}${PS1}"
+		;;
+	screen*)
+		# Use path as title
+		PATHTITLE='\[\ek\W\e\\\]'
+		# Use program name as title
+		PROGRAMTITLE='\[\ek\e\\\]'
+		PS1="${PROGRAMTITLE}${PATHTITLE}${PS1}"
+		;;
+	*)
+		;;
+esac
+</code></pre></div></div>
+
+<p>screen的.screenrc:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Caption line
+caption always "%{= R}[ %{=b b}%-w%{=rb db}%&gt;%n %t%{-}%+w%{-b}%&lt; %=%{R}][%{M}%D %M %d %{G}%c%{R}]"
+
+# Dynamic title
+shelltitle '$ |bash'
+
+# Set xterm's title
+hardstatus string "screen: %t"
+</code></pre></div></div>
+
+<p>bash中主要是设置了几个escape sequences, 具体都是screen和xterm自己定义的, 把它们塞到PS1中, 看不到的同时还能给screen和xterm发信号, 让它们改对应的title.</p>
+
+<p>screen中状态栏选用Caption而不用Hardstatus实现, 是因为要把xterm的title伪装成Hardstatus, 这个可能算个历史遗留问题, putty也是这么处理的. shelltitle就是实现将所运行程序的名称作为screen的title的功能, 默认bash,, 有命令的话就是”$ “后面的第一个字符段.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 23, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/bash-alias-completion/">Bash下实现alias补全</a></h1>
+
+    <div class="content">
+      <p>我是个懒人. 很多较长的命令, 比如apt的搜索, 安装, 卸载和清理都让我搞成了alias. 但简化输入的同时也带来个问题: 完整的命令配合bash_completion可以实现自动补全包名称, 现在用alias却得小心翼翼地输入. 这怎么行? 必须解决掉.</p>
+
+<p>之前的补全是配合bash_completion实现的, 所以很明显, alias补全也要从研究bash_completion入手. 分析/etc/bash_completion可以看出, bash_completion实现了很多用来获得补全项的函数, 然后用bash的内置命令complete将命令和函数对应起来以实现补全. 所以, 解决方案一目了然, 将函数提取出来和我自己定义的alias对应起来就好.</p>
+
+<p>以下是.bashrc中的配置</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#completion
+if [ -f /etc/bash]_completion ]; then
+	. /etc/bash_completion
+fi
+
+_show_installed()
+{
+	local cur
+	COMPREPLY=()
+	cur=`_get_cword`
+	COMPREPLY=( $( _comp_dpkg_installed_packages $cur ) )
+	return 0
+}
+
+_show_all()
+{
+	local cur
+	COMPREPLY=()
+	cur=`_get_cword`
+	COMPREPLY=( $( apt-cache pkgnames $cur 2&gt; /dev/null ) )
+	return 0
+}
+
+complete -F _show_all $default ai aw
+complete -F _show_installed $default ap
+
+#alias
+alias ai='sudo apt-get install'
+alias ap='sudo apt-get purge'
+alias aw='apt-cache show'
+</code></pre></div></div>
+
+<p>解释一下: _show_installed()用来获得已经安装的包名称, _show_all()用来获得源里所有的包名称. complete命令用以建立对应关系. 最后是我需要补全的alias. 很简单吧, 如果你有其它需要补全的alias, 函数都在/etc/bash_completion中, 提出来照着改就是了.</p>
+
+<p>PS: zsh的补全功能很强, 不用这么折腾, 有兴趣的朋友也可以试一下.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 21, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/mutt-hook/">mutt强大的hook规则</a></h1>
+
+    <div class="content">
+      <p>以前也知道mutt可以利用hook对特定情况特殊处理, 但是一直没需求, 直到上个月订阅了中文内核邮件列表.</p>
+
+<p>这个列表会在邮件最后放一段文字, 所以发PGP签名的邮件就会失败. 很明显, 签名就是保护邮件正文不被修改的, 但这个邮件列表就是要改你的邮件正文, 自然不行. 问题在于我喜欢设置为默认自动签名, 所以每次给这个邮件列表发信就得手动改PGP为Clear, 哪次忘了改? 好吧, 你的回复就消失无踪了.</p>
+
+<p>好在强大的mutt总是能满足我的各种需求, 想要默认签名, 但是发给中文内核列表的不签? 没问题.</p>
+
+<p>下面是配置:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>send-hook ~A "set pgp_autosign"
+send-hook "~C linux-kernel@zh-kernel.org" "set nopgp_autosign"
+</code></pre></div></div>
+
+<p>解释一下, 第一句设置默认情况为自动签名, 第二句匹配所有在To:或者Cc:中包含linux-kernel@zh-kernel.org的发送或者回复邮件, 此时取消自动签名.</p>
+
+<p>===============无聊的分割线===============</p>
+
+<p>刚写到这里, 又想到了hook的另一个应用: 我的mutt是配合内置imap的, 绑定了d为移动到Gmail的Trash, 但是如果你要删除Trash中的邮件, 就得再绑定一个键(例如D)为删除, 很麻烦. 理想情况是在别的文件夹中绑定d为移动到Trash, Trash中绑定d为删除. 这个实现起来依然轻松, 可以利用folder-hook.</p>
+
+<p>直接上配置:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>folder-hook . 'macro index,pager d "=[Gmail]/Trash" "Mark message as trash"'
+folder-hook 'Trash' 'bind index,pager d delete-message'
+</code></pre></div></div>
+
+<p>mutt实在是强大的过份, 想怎么玩怎么玩, 向mutt致敬!</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 18, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/end-of-season/">赛季结束--冠军!</a></h1>
+
+    <div class="content">
+      <p>Yeah, 99分创历史记录夺冠, 巴萨是最棒的!</p>
+
+<p>祝愿巴萨下赛季多线开花, 也祝大家身体健健康康.</p>
+
+<p>…不多说了, 贴张图, 补觉去…</p>
+
+<p><img src="http://adam8157.info/uploads/2010/05/champion.jpg" alt="" /></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 15, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/vim-more-backups/">vim中单个文件多个备份的实现</a></h1>
+
+    <div class="content">
+      <p>经常备份绝对是个好习惯, 一个救过我很多次的好习惯.</p>
+
+<p>编辑器我只用vim, vim也有自动备份的功能, 但是存在一个问题: vim默认一个文件只对应一个备份, 所以你只能回退一次, 再之前的版本就看不到了. 这是不够用的, 也是不可容忍的, 状况随时会发生, 我们需要对一个文件保存多个备份, 最好每次修改就备份一次, 而且都保存下来.</p>
+
+<p>当然, vim有基于git等版本控制系统的备份插件, 个人觉得有点小题大做了, 有点麻烦, 而且使得vim的配置和插件目录显得臃肿, 跨平台能力也不强.</p>
+
+<p>我的方案是靠vim自己来实现, 每次修改就保存一个备份, 备份的文件名中包含修改的时间以方便识别. 下面是我的配置: 1, 打开备份功能; 2, 设置备份目录; 3, 每次写缓冲之前设置备份文件的后缀格式为当前的”.月-日-时-分”. 默认后缀是”~”, 不存在变化, 所以只对应一个备份. 像我这样配置后, 最后的效果会类似这样: foo.c.5-15-17-30, foo.c.5-16-01-25.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>" Turn backup on
+set backup
+
+" Set backup directory
+set backupdir=$HOME/.vim/backup
+
+" Keep more backups for one file
+autocmd BufWritePre * let &amp;backupext = strftime(".%m-%d-%H-%M")
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 12, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/blank-in-shell-script/">shell脚本中的空格</a></h1>
+
+    <div class="content">
+      <p>一直不太理解shell脚本中为什么那么多空格不可省略(比如[和]), 又有那么多空格不可以有(比如=), shell脚本为什么对格式要求这么高?</p>
+
+<p>查了好多, 基本上都在总结哪里必须空格, 哪里必须不带空格. 明显, 这不是问题的本质所在. 虽然我脚本写的不多, 但是我总感觉shell脚本很优雅. 一门优雅的语言, 如shell和c, 应该是原理决定规则, 而不是像C++一样, 规则去决定实现. 不要激动, C++之父Bjarne Stroustrup就说过, 他实际上是创造了一堆他心目中的强大的面向对象语言的理论规则, 并且他不认为有人能够完全的理解C++.</p>
+
+<p>扯远了, 那么关于shell的空格要求是个什么原理呢? 其实, 和你表观看到的不一样, 有些shell表达式其实是命令风格的函数, 例如”[”, 实际上, 它是个和test差不多的函数, 它后面跟的, 包括”]”, 都只是它的参数, shell中输入命令的时候要靠空格来区分各个参数, 这里也是一样. “=”两边不能有空格同样也是因为它的命令风格要对这些进行区分的要求. 虽然很诡异, 但是也可以理解, 毕竟shell脚本就是逐行运行的命令.</p>
+
+<p>有些知识的积累就该是这样, 去理解而不是去总结. 就像c的数组下标为什么从0开始, 只要明白了a[i]同等于*(a+i), 一切都是那么自然.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 10, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/clean-debian-kernel-headers/">清理Debian内核和头文件的脚本</a></h1>
+
+    <div class="content">
+      <p>改自<strong>bones7456</strong>清理ubuntu内核的脚本, 原文地址在此: <a href="http://li2z.cn/2010/02/28/clean_ubuntu_kernel/">http://li2z.cn/2010/02/28/clean_ubuntu_kernel/</a>.</p>
+
+<p>Debian和Ubuntu的包命名方式稍有不同, 不能直接用, 改了下, 再就是避免删除元包, 增加了响应输入的功能.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+CURRENT="`uname -r | awk -F"-" '{print $1"-"$2}'`"
+HEADERS=""
+IMAGES=""
+ARCH="amd64"
+
+for HEADER in `dpkg --get-selections | grep ^linux-headers | grep -v "${ARCH}" | awk -F"-" '{print $3"-"$4}'`
+do
+	if [[ "$CURRENT" &lt; "$HEADER" ]]
+	then
+		echo "The running kernel is not the newest. $CURRENT &lt; $HEADER"
+		exit 1
+	else
+		[[ "$CURRENT" != "$HEADER" ]] &amp;&amp; {
+			HEADERS="${HEADERS} linux-headers-${HEADER}-${ARCH} linux-headers-${HEADER}-${ARCH}-common"
+			IMAGE="`dpkg --get-selections | grep ^linux-image | grep "${HEADER}" | awk '{print $1}'`"
+			IMAGES="${IMAGES} $IMAGE"
+		}
+	fi
+done
+
+if [[ -z "$HEADERS" ]]
+then
+	echo "There is no old kernel or headers need to be cleaned."
+	exit 0
+fi
+
+echo
+echo ------------------------------------
+echo "$IMAGES $HEADERS"
+echo ------------------------------------
+echo
+
+read -p "Really wanna remove these packages? [y/N] " REPLY
+
+case $REPLY in
+	y | Y )
+		sh -c "sudo apt-get purge $IMAGES $HEADERS" ;;
+	* )
+		echo "The operation is cancelled." ;;
+esac
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 9, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/boot-freedos/">给优盘添加FreeDOS启动项</a></h1>
+
+    <div class="content">
+      <p>虽然我不用Win, 但是给优盘添加个FreeDOS启动项还是会方便很多的, 帮别人重装Win, 自己刷BIOS什么的都得用到.</p>
+
+<p>之前优盘上就装的Grub2, 有Puppy和Debian的启动项, 所以仍然选这个方案.</p>
+
+<p>需要用到的东西: balder10.img(就是freedos的镜像, 官方有下载地址), syslinux(只用到里面的memdisk).</p>
+
+<p>我这优盘已经装上Grub2了, 没装的同学按自己的路径执行:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># grub-install --root-directory=/media/sdb1 /dev/sdb
+</code></pre></div></div>
+
+<p>然后就只剩下写grub.cfg了, 注意你的路径:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set root=(hd0,1)
+menuentry "FreeDOS" {
+	linux16  /boot/freedos/memdisk
+	initrd16 /boot/freedos/balder10.img
+}
+</code></pre></div></div>
+
+<p><strong>FAQ:</strong></p>
+
+<p>1, 为什么不选freedos的livecd而选了非官方的镜像? 因为livecd是用来安装的, 直接能用的命令很少.<br />
+2, memdisk是用来干什么的? 用来装载镜像模拟软盘, 磁盘, CD.<br />
+3, 为什么不用WinPE, 一没那么大空间用来浪费, 二goto Warning</p>
+
+<p><strong>Warning:</strong></p>
+
+<p>有的同学一看到memdisk的功能又要开始激动了, 这不就能启动所有的ISO了么?
+在下不才, 研究过. 答案是, 不能, 目前的硬件体系永远也不能启动<strong>所有</strong>的ISO镜像!<br />
+实模式的系统和用INT 13中断启动的可以, 因为内存映射没变. 而其它的大多都不可以, 可以的要么是引导起来的内核自己可以用ISO(很多linux发行版都支持), 要么是用INT 13启动某种镜像(如WIM).<br />
+当然有很多解决方案, WinVBlock什么的, 说到底都是又生成了一种RAM disk.<br />
+总而言之, 想要让启动后进入保护模式的系统ISO直接被引导起来, 目前的硬件体系不允许.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 7, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/kill-dell-mediadirect-button/">彻底废掉Dell笔记本的MediaDirect</a></h1>
+
+    <div class="content">
+      <p>话说, 我现在用的笔记本是Dell Vostro 1400, 虽然预装了Vista, 却是一次也没启动, 当时直接进LiveCD清掉了硬盘. 众Linuxer也可以这么干, 只不过要注意一个问题, 今天一个朋友问到我, 顺便在这儿记录一下.</p>
+
+<p>Dell的本子只要不是很低端的都带一个MediaDirect, 基于Win, 可以用它看个图片电影什么的, 可能对某些人来说比较方便, 但在我看来就是废品, 更不必说它的启动过程会进行很危险的操作了, 所以, 杀无赦…</p>
+
+<p>要知道怎么废掉它, 首先得明白它的原理, 它是基于Win的, 而Win的启动必须是可引导的主分区, 那么你又装了一个Win怎么办? Win的引导程序只能启动第一个可引导的主分区, 更别说Dell希望这个MediaDirect的分区平日是隐藏的了. 所以, Dell想到了一个很危险的解决方案—一个如果你操作不当,  会清掉你的分区表, 不修复就会丢掉所有硬盘数据的方案. 简单说, Dell用MediaDirect键, 也就是那个房子键启动MediaDirect的时候, 会改硬盘的分区表, 调整MediaDirect分区从隐藏变成主分区, 并设置为可引导, 关掉MediaDirect的时候再改回去, 很危险吧, 尤其是当你删除了MediaDirect分区的时候.</p>
+
+<p>当然, 长按MediaDirect键可以恢复, 但是这换来换去的, 又是很重要并且很脆弱的数据, 我放心不过. 而且我希望免掉这个麻烦, 万一我不小心碰到房子键呢? 能不能废掉这个按键, 让它也变成正常的开机按钮呢?</p>
+
+<p>当然可以, 说了这么多废话, 来看操作. 注意这个操作会废掉你的分区表, 事先备份!</p>
+
+<p>1, 短按电源键开机进入Live系统</p>
+
+<p>2, #dd if=/dev/zero of=/dev/sda count=1</p>
+
+<p>3, 短按MediaDirect键开机进入Live系统</p>
+
+<p>4, #dd if=/dev/zero of=/dev/sda count=1</p>
+
+<p>5, 长按MediaDirect键开机</p>
+
+<p>现在好了, 不管你按哪个键都能正常开机而且不会搞乱你的分区表.</p>
+
+<p>这中间还涉及到一些MediaDirect键的技术细节, 有校验, 存储的也不是普通的MBR, 而且Dell的工程师工具可以改. 但是过了很长时间了, 已经记不大清了, 不敢胡说, 有兴趣的朋友可以给我发邮件.</p>
+
+<p>好了, 该睡了. 晚安.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 5, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/mutt-filter-notify/">利用mutt的filter实现新邮件提醒</a></h1>
+
+    <div class="content">
+      <p>“All mail clients suck. This one just sucks less.”</p>
+
+<p>mutt实在是强大, 千奇百怪的功能, 只有你想不到的, 没有不能实现的.</p>
+
+<p>mutt擅长和其它软件配合, 比如抓取邮件部分有人用fetchmail, 有人用getmail, 有人用内置pop3, 也有人像我一样用内置imap. 但都会遇到一个问题, 新邮件提醒, 这个问题上更是各显神通, inotify监视本地mailbox的, 安装各种notify软件的, 嵌在conky里的, 脚本抓取atom订阅配合cron的.</p>
+
+<p>第一种也可以, 就是有点麻烦, 有点小题大做. 而后面的几种解决方法我觉得都不太好, 因为如果是gmail, 就隔几分钟就登录gmail; 如果不是gmail, 基本上都不太容易实现. 我理想的新邮件通知是这样的: 只依靠mutt来检测, 能够改掉screen里mutt的title, 能跳出notify提示你有新邮件, 能配合声音, 能…</p>
+
+<p>解决问题的过程无非就是RTFM, 很好, mutt提供了一个filter的功能, <a href="http://www.mutt.org/doc/devel/manual.html#formatstrings-filters">http://www.mutt.org/doc/devel/manual.html#formatstrings-filters</a>, 简单说就是将status通过管道pipe到一个脚本, 这下好了, 你的status里设置上新邮件相关字符串, 脚本里一检测, 其它的问题就全都解决了.</p>
+
+<p>下面是我mutt中status_format的设置, manual中说了, 最后加上(“|”), 就将status字符串传递给第一个词, 也就是我指定的mutt-filter脚本. 顺便说一句, mutt没那么蠢, 当然是只有这个字符串变化了才会触发pipe的动作.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set status_format="mutt-filter '-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]----%&gt;-(%P)---'|"
+</code></pre></div></div>
+
+<p>下面是我的mutt-filter脚本, 我只改了screen的window title, 发了个notify, 想要声音的自己加上就是. 最后那行的echo “$1”是将字符串还给status, 要不只是pipe到脚本, status空了的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+if [[ "$1" =~ "All Mail" &amp;&amp; "$1" =~ "New:" ]];then
+	notify-send "Get new mails"
+	printf "\ekmutt: new\e\\" &gt; /dev/tty
+else
+	printf "\ekmutt\e\\" &gt; /dev/tty
+fi
+
+echo "$1"
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page7/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <em>8</em>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page9/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

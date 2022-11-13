@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>静态库的链接顺序</title>
+  <meta name="description" content="今天工作中遇到了一个很诡异的问题:">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/09/libraries-link-order/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">静态库的链接顺序</h1>
+    <p class="post-meta"><time datetime="2010-09-08T20:04:41+08:00" itemprop="datePublished">Sep 8, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>今天工作中遇到了一个很诡异的问题:</p>
+
+<p>项目中, a.c和b.c编译出的obj先打包成静态库c.a, 再和另外一个d.a以及main.c编译出的obj链接成最后的bin文件. a.c中有private_init()和private_read()两个函数, 其中private_init()是个空函数, private_read()则在d.a中被调用.</p>
+
+<p>出现的现象是这样: 如果我main.c中不调用那两个函数, 最后就会链接报错 undefined reference to ‘private_read’, 但如果我在main.c中调用其中一个, 即使只是调用空函数private_init(), 链接也会正常完成. 更诡异得是, Makefile中的链接参数是”-lc -ld”, 但如果改成”-ld -lc”, 现象就消失了.</p>
+
+<p>想了半天没想明白, 最后翻了下_Linkers &amp; Loaders_ by John R. Levine, 终于找到了答案:</p>
+
+<blockquote>
+  <p>Searching libraries</p>
+
+  <p>After a library is created, the linker has to be able to search it. Library search generally happens during the first linker pass, after all of the individual input files have been read. If the library or libraries have symbol directories, the linker reads in the directory, and checks each symbol in turn against the linker’s symbol table. If the symbol is used but undefined, the linker includes that symbol’s file from the library. It’s not enough to mark the file for later loading; the linker has to process the symbols in the segments in the library file just like those in an explicitly linked file. The segments go in the segment table, and the symbols, both defined and undefined are entered into the global symbol table. It’s quite common for one library routine to refer to symbols in another library routine, for example, a higher level I/O routine like printf might refer to a lower level putc or write routine.</p>
+
+  <p>Library symbol resolution is an interative process. After the linker has made a pass over the symbols in the directory, if it included any files from the library during that pass, it should make another pass to resolve any symbols required by the included files, until it makes a complete pass over the directory and finds nothing else to include. Not all linkers do this; many just make a single sequential pass over the directory and miss any backwards dependencies from a file to another file earlier in the library. Tools like tsort and lorder can minimize the difficulty due to single-pass linkers, but it’s not uncommon for programmers to explcitly list the same library several times on the linker command line to force multiple passes and resolve all the symbols.</p>
+
+  <p>Unix linkers and many Windows linkers take an intermixed list of object files and libraries on the command line or in a control file, and process each in order, so that the programmer can control the order in which objects are loaded and libraries are searched. Although in principle this offers a great deal of flexibility and the ability to interpose private versions of library routines by listing the private versions before the library versions, in practice the ordered search provides little extra utility. Programmers invariably list all of their object files, then any application-specific libraries, then system libraries for math functions, network facilities and the like, and finally the standard system libraries.</p>
+
+  <p>When programmers use multiple libraries, it’s often necessary to list libraries more than once when there are circular dependencies among libraries. That is, if a routine in library A depends on a routine in library B, but another routine in library B depends on a routine in library A, neither searching A followed by B or B followed by A will find all of the required routines. The problem becomes even worse when the dependencies involve three or more libraries. Telling the linker to search A B A or B A B, or sometimes even A B C D A B C D is inelegant but solves the problem. Since there are rarely any duplicated symbols among the libraries, if the linker simply searched them all as a group as IBM’s mainframe linkers and AIX linker do, programmers would be well served.</p>
+</blockquote>
+
+<p>简单说就是: 传统的Unix编译环境下, 静态库的加载是顺序搜索一遍, 遇到没链接的函数就记下, 如果这个函数在后面的库或obj中出现了, 链接器就会把这个函数所在的obj链接过去, 不包含未链接函数的obj就会被忽略过去(静态库也只是obj的简单打包而已).</p>
+
+<p>于是, “-lc”的时候, 因为那两个函数在main.c中都没有被调用, 链接器就把a.o略过去了, “-ld”的时候虽然有了a.o中函数的调用, 但链接器已经把它给略过去, 找不到了.</p>
+
+<p>所以如果库A依赖库B, 链接的顺序就应该写为A B, 如果相互依赖就应该为A B A或者B A B的顺序.</p>
+
+<p>PS: 我查了一下, 大多现代的编译链都不会有这个问题, 但是传统, 标准以及我手里的这个编译链却都是这样的, 为了通用, 以后还是注意点吧.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>彻底废掉Dell笔记本的MediaDirect</title>
+  <meta name="description" content="话说, 我现在用的笔记本是Dell Vostro 1400, 虽然预装了Vista, 却是一次也没启动, 当时直接进LiveCD清掉了硬盘. 众Linuxer也可以这么干, 只不过要注意一个问题, 今天一个朋友问到我, 顺便在这儿记录一下.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/05/kill-dell-mediadirect-button/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">彻底废掉Dell笔记本的MediaDirect</h1>
+    <p class="post-meta"><time datetime="2010-05-07T00:11:46+08:00" itemprop="datePublished">May 7, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>话说, 我现在用的笔记本是Dell Vostro 1400, 虽然预装了Vista, 却是一次也没启动, 当时直接进LiveCD清掉了硬盘. 众Linuxer也可以这么干, 只不过要注意一个问题, 今天一个朋友问到我, 顺便在这儿记录一下.</p>
+
+<p>Dell的本子只要不是很低端的都带一个MediaDirect, 基于Win, 可以用它看个图片电影什么的, 可能对某些人来说比较方便, 但在我看来就是废品, 更不必说它的启动过程会进行很危险的操作了, 所以, 杀无赦…</p>
+
+<p>要知道怎么废掉它, 首先得明白它的原理, 它是基于Win的, 而Win的启动必须是可引导的主分区, 那么你又装了一个Win怎么办? Win的引导程序只能启动第一个可引导的主分区, 更别说Dell希望这个MediaDirect的分区平日是隐藏的了. 所以, Dell想到了一个很危险的解决方案—一个如果你操作不当,  会清掉你的分区表, 不修复就会丢掉所有硬盘数据的方案. 简单说, Dell用MediaDirect键, 也就是那个房子键启动MediaDirect的时候, 会改硬盘的分区表, 调整MediaDirect分区从隐藏变成主分区, 并设置为可引导, 关掉MediaDirect的时候再改回去, 很危险吧, 尤其是当你删除了MediaDirect分区的时候.</p>
+
+<p>当然, 长按MediaDirect键可以恢复, 但是这换来换去的, 又是很重要并且很脆弱的数据, 我放心不过. 而且我希望免掉这个麻烦, 万一我不小心碰到房子键呢? 能不能废掉这个按键, 让它也变成正常的开机按钮呢?</p>
+
+<p>当然可以, 说了这么多废话, 来看操作. 注意这个操作会废掉你的分区表, 事先备份!</p>
+
+<p>1, 短按电源键开机进入Live系统</p>
+
+<p>2, #dd if=/dev/zero of=/dev/sda count=1</p>
+
+<p>3, 短按MediaDirect键开机进入Live系统</p>
+
+<p>4, #dd if=/dev/zero of=/dev/sda count=1</p>
+
+<p>5, 长按MediaDirect键开机</p>
+
+<p>现在好了, 不管你按哪个键都能正常开机而且不会搞乱你的分区表.</p>
+
+<p>这中间还涉及到一些MediaDirect键的技术细节, 有校验, 存储的也不是普通的MBR, 而且Dell的工程师工具可以改. 但是过了很长时间了, 已经记不大清了, 不敢胡说, 有兴趣的朋友可以给我发邮件.</p>
+
+<p>好了, 该睡了. 晚安.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

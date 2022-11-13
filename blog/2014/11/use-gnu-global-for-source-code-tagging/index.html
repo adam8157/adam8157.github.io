@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>使用GNU GLOBAL索引代码</title>
+  <meta name="description" content="什么是GLOBAL">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2014/11/use-gnu-global-for-source-code-tagging/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">使用GNU GLOBAL索引代码</h1>
+    <p class="post-meta"><time datetime="2014-11-23T21:30:00+08:00" itemprop="datePublished">Nov 23, 2014</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="什么是global">什么是GLOBAL</h2>
+
+<p><a href="https://www.gnu.org/software/global/">GLOBAL</a>是GNU出品的一款代码索引工具.</p>
+
+<h2 id="global有什么优点">GLOBAL有什么优点</h2>
+
+<ul>
+  <li>
+    <p>原生支持C, C++, 汇编等6种语言的代码索引, 借助插件支持的更多达25种</p>
+  </li>
+  <li>
+    <p>支持多种查找功能, 例如最常用的查找定义, 调用和文件位置等</p>
+  </li>
+  <li>
+    <p>提供gtags-cscope命令, 兼容cscope</p>
+  </li>
+  <li>
+    <p>相对于cscope, 查找匹配更加快速和准确</p>
+  </li>
+  <li>
+    <p>支持增量更新, 而且比cscope的增量更新快很多很多</p>
+  </li>
+  <li>
+    <p>开发活跃, 上一次发布新版本是两个月前, 而cscope的上一次是两年前</p>
+  </li>
+</ul>
+
+<h2 id="如何使用global">如何使用GLOBAL</h2>
+
+<p>简单讲, 在代码目录中执行<code class="language-plaintext highlighter-rouge">gtags -i</code>建立索引数据库, 然后使用global命令查找匹配. 例如<code class="language-plaintext highlighter-rouge">global symbol</code>查看symbol的定义, <code class="language-plaintext highlighter-rouge">global -r symbol</code>查看symbol在哪被引用, 等等. 详见: <a href="https://www.gnu.org/software/global/globaldoc_toc.html">https://www.gnu.org/software/global/globaldoc_toc.html</a></p>
+
+<h2 id="vim中使用global的小技巧">Vim中使用GLOBAL的小技巧</h2>
+
+<p>继承Vim中cscope的接口和键绑定:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:set cscopeprg=gtags-cscope
+</code></pre></div></div>
+
+<p>自动从当前文件夹递归向上搜索索引数据库并加载:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>function! LoadDatabase()
+	let db = findfile("GTAGS", ".;")
+	if (!empty(db))
+		set nocscopeverbose
+		exe "cs add " . db
+		set cscopeverbose
+	endif
+endfunction
+autocmd BufEnter *.[ch] call LoadDatabase()
+</code></pre></div></div>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

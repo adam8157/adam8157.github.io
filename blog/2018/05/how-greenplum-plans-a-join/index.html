@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>How Greenplum plans a JOIN</title>
+  <meta name="description" content="What is a “JOIN”">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2018/05/how-greenplum-plans-a-join/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">How Greenplum plans a JOIN</h1>
+    <p class="post-meta"><time datetime="2018-05-31T16:00:00+08:00" itemprop="datePublished">May 31, 2018</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="what-is-a-join">What is a “JOIN”</h2>
+
+<p>INNER JOIN is an <strong>AND</strong>, OUTER JOIN is an <strong>OR</strong>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>id name       id  name
+-- ----       --  ----
+1  Pirate     1   Rutabaga
+2  Monkey     2   Pirate
+3  Ninja      3   Darth Vader
+4  Spaghetti  4   Ninja
+</code></pre></div></div>
+
+<p>INNER JOIN’s results are those tuples in table A <strong>AND</strong> B.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+INNER JOIN TableB
+ON TableA.name = TableB.name;
+
+ id |  name  | id |  name
+----+--------+----+--------
+  3 | Ninja  |  4 | Ninja
+  1 | Pirate |  2 | Pirate
+(2 rows)
+</code></pre></div></div>
+
+<p>FULL [OUTER] JOIN’s results are those tuples in table A <strong>OR</strong> B.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.name = TableB.name;
+ id |   name    | id |    name
+----+-----------+----+-------------
+  3 | Ninja     |  4 | Ninja
+    |           |  3 | Darth Vader
+  2 | Monkey    |    |
+  1 | Pirate    |  2 | Pirate
+    |           |  1 | Rutabaga
+  4 | Spaghetti |    |
+(6 rows)
+</code></pre></div></div>
+
+<p>LEFT [OUTER] JOIN’s results are those tuples in table A <strong>OR</strong> (A <strong>AND</strong> B).</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.name = TableB.name;
+
+ id |   name    | id |  name
+----+-----------+----+--------
+  1 | Pirate    |  2 | Pirate
+  3 | Ninja     |  4 | Ninja
+  2 | Monkey    |    |
+  4 | Spaghetti |    |
+(4 rows)
+</code></pre></div></div>
+
+<h3 id="join-is-not-simple-in-greenplum">JOIN is not simple in Greenplum</h3>
+
+<p>Greenplum is (was ?) a shared-nothing distributed data warehouse, data transferring (motion) between nodes costs a lot.</p>
+
+<p>To have a better performance, Greenplum needs to avoid motions and loops as possible.</p>
+
+<h2 id="how-does-greenplum-choose-the-path">How does Greenplum choose the path</h2>
+
+<h3 id="build_simple_rel"><strong>build_simple_rel()</strong></h3>
+
+<p>This stage is to get the info how data are distributed, GpPolicy.</p>
+
+<p>The data to store are partitioned onto segment databases, the other data, for internal use like catalog, are not partitioned.</p>
+
+<p>Entry database, I take it as the main backend, which <strong>holds</strong> none or all, but not a part of the data when processing.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/*
+ * GpPolicyType represents a type of policy under which a relation's
+ * tuples may be assigned to a component database.
+ */
+typedef enum GpPolicyType
+{
+    POLICYTYPE_PARTITIONED,     /* Tuples partitioned onto segment database. */
+    POLICYTYPE_ENTRY            /* Tuples stored on entry database. */
+} GpPolicyType;
+</code></pre></div></div>
+
+<h3 id="set_base_rel_pathlists"><strong>set_base_rel_pathlists()</strong></h3>
+
+<p>Finds <strong>all</strong> paths available for scanning each base-relation entry, sequential scan and any available indices are considered.</p>
+
+<p>RTE_FUNCTION: create_functionscan_path()<br />
+RTE_RELATION: create_external_path() / create_aocs_path() / create_seqscan_path() / create_index_paths() …<br />
+RTE_VALUES: create_valuesscan_path()</p>
+
+<h3 id="create_xxx_path"><strong>create_xxx_path()</strong></h3>
+
+<p>Decide Locus (location, describing the distribution of a base relation).</p>
+
+<p>The difference between entry policy and entry locus is that, entry database is a concept of how data store, entry locus is where data come from.</p>
+
+<p>For instances, catalog’s locus is <code class="language-plaintext highlighter-rouge">General</code> and its policy is <code class="language-plaintext highlighter-rouge">Entry</code>; The value to insert, its locus is <code class="language-plaintext highlighter-rouge">Entry</code>, data go into master firstly; <code class="language-plaintext highlighter-rouge">generate_series()</code>’s locus is <code class="language-plaintext highlighter-rouge">SingleQE</code>, it could be planned onto any db.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>typedef enum CdbLocusType
+{
+    CdbLocusType_Null,
+    CdbLocusType_Entry,         /* a single backend process on the entry db:
+                                 * usually the qDisp itself, but could be a
+                                 * qExec started by the entry postmaster.
+                                 */
+    CdbLocusType_SingleQE,      /* a single backend process on any db: the
+                                 * qDisp itself, or a qExec started by a
+                                 * segment postmaster or the entry postmaster.
+                                 */
+    CdbLocusType_General,       /* compatible with any locus (data is
+                                 * self-contained in the query plan or
+                                 * generally available in any qExec or qDisp) */
+    CdbLocusType_Replicated,    /* replicated over all qExecs of an N-gang */
+    CdbLocusType_Hashed,        /* hash partitioned over all qExecs of N-gang */
+    CdbLocusType_HashedOJ,      /* result of hash partitioned outer join */
+    CdbLocusType_Strewn,        /* partitioned on no known function */
+    CdbLocusType_End            /* = last valid CdbLocusType + 1 */
+} CdbLocusType;
+</code></pre></div></div>
+
+<h3 id="make_rel_from_joinlist"><strong>make_rel_from_joinlist()</strong></h3>
+
+<p>Build access paths using a “joinlist” to guide the join path search, nestloop, merge, hash?</p>
+
+<h3 id="standard_join_search---set_cheapest"><strong>standard_join_search() -&gt; set_cheapest()</strong></h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for_each_cell(p, lnext(list_head(parent_rel-&gt;pathlist)))
+{
+	Path       *path = (Path *) lfirst(p);
+	compare_path_costs(..., path, ...)
+	if (BETTER)
+		cheapest_total_path = path;
+}
+</code></pre></div></div>
+
+<h2 id="quizzes">Quizzes</h2>
+
+<p>What and where are the motions? <code class="language-plaintext highlighter-rouge">Entry</code>, <code class="language-plaintext highlighter-rouge">SingleQE</code>, <code class="language-plaintext highlighter-rouge">General</code>, <code class="language-plaintext highlighter-rouge">Hashed</code> and <code class="language-plaintext highlighter-rouge">Strewn</code> locuses, <strong>join</strong> and <strong>left join</strong>, each other?</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

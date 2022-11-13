@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page7/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>Jul 23, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/07/firefox-wm-class/">不规矩的Firefox</a></h1>
+
+    <div class="content">
+      <p>Firefox, Swiftfox, Iceweasel都太可气了!</p>
+
+<p>相信各位用wm的朋友都会给特定的应用程序制定规则, 例如放到特定的桌面, 不要边框等等, 很简单, 也很有用.</p>
+
+<p>但是我很久之前就发现这些规则对Firefox及其衍生版都不起作用, 它们不会跟着你的特定规则自动出现在某个桌面, 而是坚持出现在当前桌面. 这个问题在我这一直都是悬案, 直到今天在Arch的Wiki中看到这段: <a href="http://wiki.archlinux.org/index.php/Openbox#Xprop_for_Firefox">Xprop_for_Firefox</a>.</p>
+
+<p>大概意思就是说: 不管实际是什么, Firefox及其衍生版都只认”Firefox*“这个WM_CLASS字符串. 真这么流氓? 用下面的openbox配置试了一下, 果然老老实实的…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;application class="Firefox*"&gt;
+  &lt;desktop&gt;1&lt;/desktop&gt;
+&lt;/application&gt;
+</code></pre></div></div>
+
+<p>PS: Wiki中说不知道具体原因, 但我猜是因为启动起来以后WM_CLASS这个值变了, 一直都在启动Xulrunner, 最后时刻给套上了个Firefox, Swiftfox或者Iceweasel的外壳. 改天验证下.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jul 12, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/07/champion-of-world/">艺术足球万岁</a></h1>
+
+    <div class="content">
+      <p>感谢世界杯, 感谢西班牙. 艺术足球万岁!</p>
+
+<p><img src="http://adam8157.info/uploads/2010/07/champion_of_world.jpg" alt="Champion of World" /></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jul 9, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/07/update-to-ext4/">升级至Ext4</a></h1>
+
+    <div class="content">
+      <p>今天终于忍不住把分区格式转到了Ext4.</p>
+
+<p>很简单, 用puppy或者其它livecd引导, 把原来的分区tar到移动硬盘, 格式化为Ext4后再tar回来就是了. 之所以建立新的Ext4分区而不是从Ext3转过去是为了保证原有文件也使用了Ext4新的特性.</p>
+
+<p>下面是根分区的操作, 其它分区类似:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tar cvpf /mnt/mount_point_of_storage/root.tar -C /mnt/mount_point_of_root ./
+mkfs.ext4 /dev/partition_of_root
+tar xvpf /mnt/mount_point_of_storage/root.tar -C /mnt/mount_point_of_root
+</code></pre></div></div>
+
+<p><strong>PS1: 记得改fstab和grub.</strong></p>
+
+<p>PS2: 从去年的七月初开始想转Ext4, 一直忍到现在才动手. 事实证明, 我是一个多么稳重的人儿啊…</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jul 2, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/07/toggle-vim-option/">Vim选项的Toggle</a></h1>
+
+    <div class="content">
+      <p>今天想给Vim添加个Toggle行号显示的快捷键, 但自己写出来的函数怎么看怎么丑.</p>
+
+<p>最后试着查了下手册, 结果再一次被Vim的强大震惊:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:se[t] {option}?        Show value of {option}. 显示该选项当前值
+
+:se[t] {option}!   or
+:se[t] inv{option}      Toggle option: Invert value. {not in Vi} 反转该选项的值
+</code></pre></div></div>
+
+<p>一行就搞定了…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>" Toggle display line number
+nnoremap &lt;F10&gt; :set number! number?&lt;CR&gt;
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jul 2, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/07/wordpress-paste-code-tip/">WordPress中粘贴代码的小技巧</a></h1>
+
+    <div class="content">
+      <p>糟糕的换行和字符替换? 眼花缭乱的代码高亮插件? 各种各样移植性很差的标签? 大家都受够了吧…</p>
+
+<p>废话不多说, 我自己在Wordpress中粘贴代码的方法如下:</p>
+
+<p>先在<a href="http://www.elliotswan.com/postable/">http://www.elliotswan.com/postable/</a>这里粘贴代码进行HTML字符实体的转义, 然后将转化结果粘贴到HTML编辑器中并加上<code class="language-plaintext highlighter-rouge">&lt;pre&gt;&lt;code&gt;</code>和<code class="language-plaintext highlighter-rouge">&lt;/code&gt;&lt;/pre&gt;</code>标签, 然后, 完了.</p>
+
+<p>另外, 为了避免代码过长, 编辑主题的CSS文件, 用下面的代码加上个滚动条, 调整下外观什么的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pre {
+width: 98%;
+padding: 5px;
+overflow: auto;
+background: #F0F0F0;
+border:#C6C6C6 1px solid;
+margin: 10px 20px 20px 0px;
+}
+</code></pre></div></div>
+
+<p>贴个脚本给大家看效果: (用来那啥的,嘘…)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长的行
+#!/bin/sh
+
+#port=
+#user=
+#host=
+source .hostinfo
+
+name=$(basename "$0")
+lock=$(ps -A -F | grep qTfnN | grep $user'@'$host | grep -v grep | awk '{print $2}')
+
+if [[ "$#" = "1" &amp;&amp; "$1" = "on" ]]
+then
+	if [ -n "$lock" ]
+	then
+		echo Tunnel is already on.
+		exit 1
+	else
+		ssh -qTfnN -D $port $user'@'$host
+		exit 0
+	fi
+
+elif [[ "$#" = "1" &amp;&amp; "$1" = "off" ]]
+then
+	if [ -n "$lock" ]
+	then
+		kill $lock
+		exit 0
+	else
+		echo Tunnel is already off.
+		exit 1
+	fi
+
+else
+	echo "Usage: $name on | off"
+	exit 1
+fi
+
+exit 0
+#很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长的行
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 18, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/06/make-board-image/">制作目标板flash镜像</a></h1>
+
+    <div class="content">
+      <p>今天接了个小任务, 写个程序用板子上的整个flash做个镜像, 量产的时候要用. 据说之前用那个专用软件读取超慢, 只有几K每秒.</p>
+
+<p>我第一个念头就是可以用dd或者cat, 但总觉得没这么简单, 试过之后发现, 就是这么简单. 而且只要几秒钟, 整个镜像就做好了.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+PARTNUM=11
+
+if [ -z $1 ]
+then
+	echo ERROR: Please specify the output filename
+	exit 1
+fi
+
+for i in `seq 0 $[$PARTNUM - 1]`;do
+	#dd if=/dev/mtd$i &gt;&gt; $1
+	cat /dev/mtd$i &gt;&gt; $1
+done
+
+exit 0
+</code></pre></div></div>
+
+<p>PARTNUM是板子上的分区数, 我们这个项目是11个分区, 从0到10.</p>
+
+<p>两点说明:<br />
+1, 参数只有一个, 即生成的目标文件路径, 可以写到外接usb设备或者nfs目录里.<br />
+4, 用mtd或者mtdblock都可以, 生成的文件是一样的, 但这个可能取决于具体情况.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 18, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/06/nfs-uid-mapping/">nfs挂载之uid映射</a></h1>
+
+    <div class="content">
+      <p>开发的时候用nfs把主机目录挂载到板子上是很方便的, 我们就是如此.</p>
+
+<p>nfs的配置文件是/etc/exports, 可以设置具体目录的具体参数, 包括只读或者可写. 一般情况下, 目录挂载为只读就可以, 但这几天有点新需求, 需要往nfs主机目录写文件, 于是问题就来了: 写入的文件的owner是root, 管理起来麻烦得很, 尤其我们的nfs主机是一台服务器, 我在上面只有普通帐户没有root权限.</p>
+
+<p>研究了下exports的写法, 发现有个User ID Mapping的功能, 可以将客户端的操作请求视为主机上的某个用户, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/home/adam/nfs *(rw,sync,all_squash,anonuid=500,anongid=600)
+</code></pre></div></div>
+
+<p>重点在all_squash,anonuid=500,anongid=600这三个选项, 500和600是我在nfs主机上的用户id和组id. 这样一来, 写入的文件的owner就是我了, 可以任意操作了, 舒服.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 17, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/06/imagemagick-convert-mogrify/">Imagemagick之批量转换</a></h1>
+
+    <div class="content">
+      <p>最近朋友在做界面方面的开发, 帮她找了一堆SVG格式的矢量图标.</p>
+
+<p>麻烦的是, 她在Win下没有能方便地查看svg的软件(IrfanView和XnView都得加个需要注册的插件才行), 只能用CroelDRAW或者InkScape一个个打开看. 而且这些图标最后要用的时候得转成分辨率为256x256的PNG, 文件夹又分得很细, Win下的批量转换软件用起来也很麻烦.</p>
+
+<p>所以, 好人做到底, 有请无敌的Imagemagick:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find ./ -name *.svg -exec convert -resize 256x256 {} {}.png \;
+</code></pre></div></div>
+
+<p>只是这样会出现foobar.svg.png这样难看的文件名, 查了下, Imagemagick还有一个工具mogrify:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find ./ -name *.svg -exec mogrify -format png -resize 256x256 {} \;
+</code></pre></div></div>
+
+<p>方便吧? Imagemagick还有很多超强的工具和用法, 大家没事的时候可以研究下.</p>
+
+<p>PS: convert能够处理.svgz这种压缩过的格式, mogrify不能. 所以可以先convert再用rename批量改掉.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 14, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/06/turn-off-x-screensaver/">关闭X的屏幕保护</a></h1>
+
+    <div class="content">
+      <p>这两天看世界杯的时候总是在精彩或者关键的时刻因为屏幕保护而黑屏, 太烦了.</p>
+
+<p>Google如何关闭屏幕保护, 大多都是说关闭DPMS也就是Energy Star模块, 这个我之前试过, 不行. 但当时没什么需求, 所以就没管, 这个现在影响我了, 还是好好研究下吧.</p>
+
+<p>查看xset的手册后发现屏幕保护是由X的两个部分控制的, 一个是BlankTime(较新的X中放在ScreenSaver选项中), 一个是DPMS. BlankTime设置的是黑屏, 也就是说只黑屏而不关显示器电源, 对于液晶显示器来说就是不关背灯. DPMS设置的是电源, 三个子选项Standby, Suspend和Off对于CRT显示器是一个逐步关闭电源的过程, 对于液晶显示器应该是一样的.</p>
+
+<p>正因为X的屏幕保护由两部分控制, 单纯的关闭DPMS或者BlankTime都不行, 必须都关掉.  所以我在.xinitrc中加入了下面的命令, 具体解释和其它xset命令参数见Manual.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xset s off
+xset dpms 0 0 0
+</code></pre></div></div>
+
+<p>但是这样暴力关闭显得不大环保, 尤其是整宿不关机下载的情况, 可以选择把DPMS和BlankTime的超时时间设置得久一点, 或者加一条alias用来手动关闭显示器电源(笔记本没显示器开关).</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>alias soff='sleep 5 &amp;&amp; xset dpms force off'
+</code></pre></div></div>
+
+<p>之所以sleep 5是为了防止命令执行以后因为手抖或者合上笔记本的盖子而唤醒显示器. 同时这也解释了我为什么在上一步不用xset -dpms, 因为关显示器的时候会再次启用DPMS模块, 屏保又开始生效了, 而置0只是关屏保而不关DPMS, 留着这个模块用来关显示器. 还有一个原因在于有的桌面环境会不停得去检测并启用DPMS模块, 无法简单地关闭DPMS模块.</p>
+
+<p>此外, 如果你的笔记本电脑合上盖子时dmesg能够检测到lid button信号, 可以在acpi的配置文件/etc/acpi/events/lm_lid设置相应的动作, 我的完全没有检测到, 也就没有细研究了.</p>
+
+<p>—————-用来补充的分割线—————-</p>
+
+<p>我用xlockmore锁屏幕的, 它有个-dpmsoff的参数, 后接秒数, 用来关屏幕电源. 这下方便多了, 现在的状态是: 平时没有屏保, 锁屏幕顺便关掉显示器电源.</p>
+
+<p>PS: 貌似这个参数有个小bug, 它要求加个秒数, 但是不理会具体的值, 算了, 能关就好.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 26, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/tar-path/">tar打包之路径</a></h1>
+
+    <div class="content">
+      <p>一直都在用一个小脚本备份一些重要的东西到优盘上, 但是生成的目录结构我很不满意.</p>
+
+<p>例如我要打包~/a, ~/b/c, ~/d/e三个目录, 以前我是:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ~
+tar czf foobar.tgz a b/c d/e
+</code></pre></div></div>
+
+<p>这样解压后仍然会出来a, b/c, d/e这样的目录结构, 而我理想情况是解压后出来a, c, e三个目录, 也就是说我只想保留一层目录结构. 想解决这个还是得从研究tar的参数入手, -C这个更改目录的选项虽然以前也知道, 但当时小看它了, 今天试了一下, 竟然可以这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tar czf foobar.tgz -C ~ a -C ~/b c -C ~/d e
+</code></pre></div></div>
+
+<p>连续变更三次当前目录, 这样tar包里的结构就是a, c, e了. 注意路径写全, 因为后一次-C默认的路径依赖于前一次-C.</p>
+
+<p>—————————胡乱感慨的分割线—————————</p>
+
+<ol>
+  <li>
+    <p>C和*nix果然是最符合Geek变态思维的玩具.</p>
+  </li>
+  <li>
+    <p>这个世界最伟大的秩序就是: 除了不让的, 剩下的都可以.</p>
+  </li>
+</ol>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page6/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <em>7</em>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page8/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>迁移到Octopress</title>
+  <meta name="description" content="长久以来我就对Wordpress有着诸多不满: 冗余, 速度慢, 非静态, 依赖数据库, 迁移成本高… 但是苦于没有合适的替代品, 只能忍受. 直到我最近发现了Octopress.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2012/02/migration-to-octopress/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">迁移到Octopress</h1>
+    <p class="post-meta"><time datetime="2012-02-09T17:31:00+08:00" itemprop="datePublished">Feb 9, 2012</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>长久以来我就对Wordpress有着诸多不满: 冗余, 速度慢, 非静态, 依赖数据库, 迁移成本高… 但是苦于没有合适的替代品, 只能忍受. 直到我最近发现了<a href="http://octopress.org/">Octopress</a>.</p>
+
+<h2 id="什么是octopress">什么是Octopress</h2>
+
+<p>Octopress是一个基于<a href="http://jekyllrb.com/">Jekyll</a>的静态博客生成系统</p>
+
+<h2 id="octopress有什么优点">Octopress有什么优点</h2>
+
+<ul>
+  <li>
+    <p>纯静态: 最终发布的只有HTML, Javascript和CSS</p>
+  </li>
+  <li>
+    <p>Markdown: 使用Markdown作为源文件语言, 易写易读</p>
+  </li>
+  <li>
+    <p>搭建方便: 简洁的Ruby框架, 操作十分简单方便</p>
+  </li>
+  <li>
+    <p>迁移成本低: 因为是静态网页, 对主机要求低, 且迁移方便</p>
+  </li>
+  <li>
+    <p>版本控制友好: 整个项目和文章源代码都是纯文本(图片等除外), 方便版本控制</p>
+  </li>
+</ul>
+
+<h2 id="如何搭建和迁移">如何搭建和迁移</h2>
+
+<ul>
+  <li>
+    <p>搭建请参考<a href="http://octopress.org/docs/">Octopress Documentation</a></p>
+  </li>
+  <li>
+    <p>迁移请参考<a href="https://github.com/mojombo/jekyll/wiki/blog-migrations">Jekyll的wiki</a>, 我的方案是用<a href="https://github.com/thomasf/exitwp">Exitwp</a>迁移文章, 用Wordpress的<a href="http://wordpress.org/extend/plugins/disqus-comment-system/">Disqus插件</a>迁移评论</p>
+  </li>
+</ul>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

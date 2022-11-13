@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page4/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>Oct 22, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/10/mutt-check-attach/">让mutt提醒遗忘附件</a></h1>
+
+    <div class="content">
+      <p>最近也不知道是工作忙还是心不在焉, 发邮件经常漏掉附件. 尤其有时候是发给其它时区的同事和朋友, 一来一回就耽误一整天, 很影响效率.</p>
+
+<p>这种事情想来也好处理, 把mutt的sendmail指向一个脚本. 先检测下正文中有没有出现Attach之类的词, 出现了而且没有附件的时候就提醒添加. 直到符合条件或者通过zenity等方式略过检查才发出去.</p>
+
+<p>mutt中就下面这么一句. 但注意: 如果record, 没发送成功也会存一份, 用my_hdr Bcc:实现record就可以避免.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set sendmail="pre-sendmail"
+</code></pre></div></div>
+
+<p>我的配置和脚本还是放在<a href="http://adam8157.info/projects/">这里</a>, 基本上是抄的<a href="http://wiki.mutt.org/?ConfigTricks/CheckAttach">MuttWiki</a>, 稍微做了些改进.</p>
+
+<p>其实本来是想通过mutt的send2-hook, 然后exec <pipe-message>实现的, 但是交互性太差, 还是用脚本灵活些. 于是为了实现这个功能我顺便放弃了mutt内置的imap和smtp, 转而使用offlineimap和msmtp. 也好, 本地存储更快, 又能离线浏览. Happy accident!</pipe-message></p>
+
+<p>PS: 另外介绍一个mutt小技巧, 标记所有邮件为已读:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>macro index \cr "&lt;tag-pattern&gt;.\n&lt;tag-prefix&gt;&lt;clear-flag&gt;N&lt;untag-pattern&gt;.\n"
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Oct 11, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/10/linux-vdso/">Linux下的VDSO</a></h1>
+
+    <div class="content">
+      <p>VDSO(Virtual Dynamically-linked Shared Object)是个很有意思的东西, 它将内核态的调用映射到用户态的地址空间中, 使得调用开销更小, 路径更好.</p>
+
+<p>开销更小比较容易理解, 那么路径更好指的是什么呢? 拿x86下的系统调用举例, 传统的int 0x80有点慢, Intel和AMD分别实现了sysenter, sysexit和syscall, sysret, 即所谓的快速系统调用指令, 使用它们更快, 但是也带来了兼容性的问题. 于是Linux实现了vsyscall, 程序统一调用vsyscall, 具体的选择由内核来决定. 而vsyscall的实现就在VDSO中.</p>
+
+<p>Linux(kernel 2.6 or upper)环境下执行ldd /bin/sh, 会发现有个名字叫linux-vdso.so.1(老点的版本是linux-gate.so.1)的动态文件, 而系统中却找不到它, 它就是VDSO. 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ldd /bin/sh
+        linux-vdso.so.1 =&gt;  (0x00007fff2f9ff000)
+        libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f28d5b36000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f28d5eca000)
+</code></pre></div></div>
+
+<p>linux-gate.so.1的地址是0xffffe000. 较新的内核提供了进程随机地址化功能, linux-vdso.so.1的地址每次cat /proc/self/maps都会变化, 想把它从/proc/self/mem中dd出来反汇编玩儿的同学请先:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo "0" &gt; /proc/sys/kernel/randomize_va_space
+</code></pre></div></div>
+
+<p>不光是快速系统调用, glibc现在也提供了VDSO的支持, open(), read(), write(), gettimeofday()都可以直接用VDSO中的实现, 使得这些调用更快, glibc更兼容, 内核新特性在不影响glibc的情况下也可以更快的部署. 实在是Nice!</p>
+
+<p>ref:<br />
+1, <a href="http://lwn.net/Articles/18414/">http://lwn.net/Articles/18414/</a><br />
+2, <a href="http://www.ibm.com/developerworks/cn/linux/kernel/l-k26ncpu/index.html">http://www.ibm.com/developerworks/cn/linux/kernel/l-k26ncpu/index.html</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Sep 16, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/09/print-colored-text-through-irc/">在IRC中输入彩色文字</a></h1>
+
+    <div class="content">
+      <p>IRC中竟然还可以发送彩色文字, 真好玩儿. 像这样:</p>
+
+<p><img src="http://adam8157.info/uploads/2011/09/colored_text_through_irc.png" alt="" /></p>
+
+<p>各个client有自己的文档, 大致通用, Irssi的在<a href="http://irssi.org/documentation/formats">这里</a>.</p>
+
+<p>eexpress写了个脚本生成随机颜色, 但是用起来麻烦. 去Irssi官网上逛了逛, 发现还真有这样的插件, 只是不支持中文. 于是稍微改了下, 添加了UTF-8的支持, 上图就是修改之后的效果.</p>
+
+<p>修改后的脚本已经发到了Irssi scripts维护邮箱, 应该很快就会更新, 等不及的直接去<a href="http://pastebin.com/tu6pCJsw">这里</a>下载. 欢迎反馈.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jul 21, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/07/start-using-twitter/">开始twitter</a></h1>
+
+    <div class="content">
+      <p>帝都就是不一样啊, 好多大仙儿们的真身都在这儿.</p>
+
+<p>为了避免错失聚餐之类的活动, 我也开始twitter啦, <a href="https://twitter.com/adam8157">@adam8157</a>, 是该说我稳重还是落伍呢? :)</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 1, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/06/first-day-in-redhat/">Red Hat第一天</a></h1>
+
+    <div class="content">
+      <p>2011-6-1, 今天顺利入职Red Hat, 大家都很nice, 环境也很好, 感觉很不错.</p>
+
+<p>感谢<a href="http://www.casparant.com">Caspar</a>的引荐, 感谢Sophie在入职问题上的帮助, 感谢<a href="http://guaneryu.com/blog/">Gery</a>在入职后的各种帮助.</p>
+
+<p>其实Red Hat没有想象中那么难进, 我也只是做了四份题(C, Shell, Linux基础, Kernel基础), 然后和Leader, HR分别谈了一次就差不多了. 待遇和环境什么的又很不错, 十五天带薪年假, 不定时上班, 不定时下班, 可以在家办公, 穿着随意, 休息室, 台球厅, 免费饮料和零食, 报销家里上网费… 我觉得各位只要技术不错, 对Linux有爱, 就相当值得一试.</p>
+
+<p>还有, 我今天竟然遇到了我好多年没见的初中同学, 在休息室瞪着瞪着俩人就震惊了, 傻乎乎地喊着”啊…你…”, 乐哈哈地用方言叽里呱啦, 呵呵, 有意思.</p>
+
+<p><em>PS, 我已经从Red Hat离职了.</em></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 1, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/06/congratulations-barcelona/">Congratulations, FC Barcelona</a></h1>
+
+    <div class="content">
+      <p>这几天只是没上网, 直播都是看了的. 一样得激动, 一起得开心. 祝贺大家!</p>
+
+<p><img src="http://adam8157.info/uploads/2011/06/messi_and_cup.jpg" alt="" /></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 8, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/05/dropbox-is-awesome/">Dropbox太棒了</a></h1>
+
+    <div class="content">
+      <p>Dropbox实在是太棒了.</p>
+
+<p>1, 跨平台, Linux/Mac/Windows/移动设备<br />
+2, 安全, 传输采用SSL, 存储采用AES-256<br />
+3, 速度快, 且使用差分传输技术, 快上加快<br />
+4, 自动同步, 让你多个设备上的文件保持同步<br />
+5, 操作方便, 文件拖进去或者建立软链接都可以<br />
+6, 可以共享文件夹, 实现多人共同协作编辑和分享<br />
+7, 有版本控制功能, 文件丢了, 修改错了都能找回来<br />
+…</p>
+
+<p>用<a href="http://db.tt/ovikWQZ">我的推广链接</a>注册, 初始容量会比默认的2G多250M.</p>
+
+<p>PS: 默认的Linux客户端需要Nautilus, 没有的可以看看<a href="http://wiki.dropbox.com/TipsAndTricks/TextBasedLinuxInstall">这篇Wiki</a>.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 6, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/05/show-dd-progress/">让dd显示进度</a></h1>
+
+    <div class="content">
+      <p>最近在用dd处理一些东西, 大概执行一次两三个小时的样子, 但是dd默认没有进度输出, 很不方便.</p>
+
+<p>好在, dd接收到SIGUSR1信号时会输出当前的读写进度, 可以利用这个特性和watch达到想要的效果, 例如这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dd if=/dev/zero of=/tmp/foo&amp;
+
+watch -n 10 pkill -USR1 ^dd$
+</code></pre></div></div>
+
+<p>ref:<br />
+1, <a href="http://www.commandlinefu.com/commands/view/4011/check-the-status-of-dd-in-progress">http://www.commandlinefu.com/commands/view/4011/check-the-status-of-dd-in-progress</a><br />
+2, <a href="http://shellscripts.org/project/ddprogress">http://shellscripts.org/project/ddprogress</a></p>
+
+<p><em>PS, dd现在支持直接显示进度了, 参数是status=progress</em></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Apr 20, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/04/colorful-manual-page/">彩色Manpages</a></h1>
+
+    <div class="content">
+      <p>有句玩笑话: “RTFM(Read the F**ing Manual)”和”RTFSC(Read the F**ing Source Code)”是解决问题最有效的两种方法.</p>
+
+<p>然而这么重要的man默认显示却只有一种颜色, 效果也只是简单的加粗, 下划线和闪烁, 实在是简陋, 效率也低. 所以我通过下面的配置给它加了几种颜色, 看起来舒服多了.</p>
+
+<p>我加到.bashrc中的:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export LESS_TERMCAP_mb=$'\E[05;34m'       # begin blinking
+export LESS_TERMCAP_md=$'\E[01;34m'       # begin bold
+export LESS_TERMCAP_me=$'\E[0m'           # end mode
+export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
+export LESS_TERMCAP_so=$'\E[44;33m'       # begin standout-mode
+export LESS_TERMCAP_ue=$'\E[0m'           # end underline
+export LESS_TERMCAP_us=$'\E[04;33m'       # begin underline
+</code></pre></div></div>
+
+<p>效果大概是这样:
+<img src="http://adam8157.info/uploads/2011/04/colorful_manual_page.png" alt="" /></p>
+
+<p>原理其实就是一些ANSI color escapes, 分别作用于原来的粗体, 下划线, 闪烁和提示消息, 格式如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ESC}[{attr};{bg};{fg}m
+
+attr:
+Reset         00
+Bold          01
+Italic        03
+Underline     04
+Blink         05
+Reverse       07
+No Bold       22
+No Italic     23
+No Underline  24
+No Blink      25
+No Reverse    27
+
+bg:
+BLACK         40
+RED           41
+GREEN         42
+YELLOW        43
+BLUE          44
+MAGENTA       45
+CYAN          46
+WHITE         47
+
+fg:
+BLACK         30
+RED           31
+GREEN         32
+YELLOW        33
+BLUE          34
+MAGENTA       35
+CYAN          36
+WHITE         37
+</code></pre></div></div>
+
+<p>我用的是普通的8色, 感觉还好. 但如果你跟<a href="http://roylez.heroku.com/">主席</a>一样是个颜色控, 而且你用的终端也支持, 可以将bg和fg换成256色的. 格式相应的变为下面这样, fg和bg的取值范围为0-255:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ESC}[{attr};48;05;{bg};38;05;{fg}m
+</code></pre></div></div>
+
+<p><strong>========UPDATE========</strong></p>
+
+<p>刚Publish就发现了问题, Fedora 14中上面的设置不起作用!</p>
+
+<p>查了下, 原来是因为某些发行版直接使用ANSI color escapes(也就是SGR  escape sequence)去处理粗体, 斜体和下划线, 而我先前的做法只适用于老的控制序列. 废话不多说, 详细的解释去看grotty的手册, 解决方法如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export GROFF_NO_SGR=1
+</code></pre></div></div>
+
+<p><strong>========UPDATE AGAIN========</strong></p>
+
+<p>写了个脚本(<a href="https://github.com/adam8157/scripts/blob/master/color-chart">传送门</a>), 可以打印出8色ANSI Color和256色XTERM Color, 方便颜色控们调试.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Apr 11, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/04/screen-dynamic-titles/">screen中动态设置标题</a></h1>
+
+    <div class="content">
+      <p>screen用起来很方便, 和xterm等虚拟终端配合起来更是花样多多. 例如, 我们可以根据screen的状态去动态地调整xterm的title. 这个功能我之前就实现过(<a href="http://adam8157.info/blog/2010/05/terminal-bash-screen/">传送门</a>), 但是那些sequences很难懂, 我自己今天再看过都糊涂了, 所以赶紧记下.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hardstatus off
+hardstatus string "screen(@%H): %t"
+termcapinfo xterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
+</code></pre></div></div>
+
+<p>上面是我screen中这部分的配置, 第一句是禁止在hardstatus line中打印警告, 第二句是设置hardstatus line的内容(详见screen手册中的STRING ESCAPES), 第三句最难懂了, 它的意思是把xterm的titlebar当作screen的hardstatus line.</p>
+
+<p>详细说第三句, hs表示终端有个hardstatus line, ts提供进入hardstatus line的 escape sequence, fs是离开时用的, ds是用于清除的. 它们各自的escape sequence是在xterm中定义的, 意义如下:</p>
+
+<blockquote>
+  <p>3.1 xterm escape sequences
+Window and icon titles may be changed in a running xterm by using XTerm escape sequences. The following sequences are useful in this respect:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ESC]0;stringBEL -- Set icon name and window title to string
+ESC]1;stringBEL -- Set icon name to string
+ESC]2;stringBEL -- Set window title to string
+</code></pre></div>  </div>
+</blockquote>
+
+<p>where ESC is the escape character (\033), and BEL is the bell character (\007).</p>
+
+<p>PS: 发现自己真是挺能折腾的…</p>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page3/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <em>4</em>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page5/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

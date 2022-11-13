@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Jump consistent hash算法分析</title>
+  <meta name="description" content="Jump Consistent Hash是一个来自Google的快速, 几乎没有内存消耗的一致性哈希算法. 这篇文章是我的翻译和理解思路.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2018/06/jump-consistent-hash-explained/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Jump consistent hash算法分析</h1>
+    <p class="post-meta"><time datetime="2018-06-30T16:00:00+08:00" itemprop="datePublished">Jun 30, 2018</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p><a href="https://arxiv.org/pdf/1406.2294.pdf" title="论文链接">Jump Consistent Hash</a>是一个来自Google的快速, 几乎没有内存消耗的一致性哈希算法. 这篇文章是我的翻译和理解思路.</p>
+
+<h2 id="哈希算法的设计目标">哈希算法的设计目标</h2>
+
+<ol>
+  <li>平衡性, 把对象均匀地分布在所有桶(bucket)中.</li>
+  <li>单调性, 当桶的数量变化时, 只需要把一些对象从旧桶移动到新桶, 不需要做其它(例如旧桶之间的)移动.</li>
+</ol>
+
+<p>比如一个分布式存储的系统, 按哈希分布带来优化的便利, 平衡性可以避免数据倾斜, 单调性则使得扩容和减容更快速.</p>
+
+<h2 id="算法的设计思路">算法的设计思路</h2>
+
+<p>我们用循序渐进的思路来设计, <code class="language-plaintext highlighter-rouge">ch(key, num_buckets)</code>为桶数为num_buckets时的hash函数, 为了满足设计目标, 需要:</p>
+
+<ol>
+  <li>num_buckets为1时, 任意key, <code class="language-plaintext highlighter-rouge">ch(key, 1)==0</code>, 全落在第0个桶里.</li>
+  <li>num_buckets由1<strong>变为</strong>2后, <code class="language-plaintext highlighter-rouge">ch(key, 2)</code>应该有1/2的结果保持为0, 有1/2变为1.</li>
+  <li>…</li>
+  <li>num_buckets由n<strong>变为</strong>n+1后, <code class="language-plaintext highlighter-rouge">ch(key, n+1)</code>应该有n/(n+1)的结果保持不变, 有1/(n+1)跳变为n+1.</li>
+</ol>
+
+<p>因此, 只要我们用一个分布均匀的函数, 例如伪随机数生成器, 并且让这个伪随机数生成器的状态只依赖于key, 从0个桶开始推导, 变到第num_buckets个桶, 结果就是我们想要的hash值:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int ch(int key, int num_buckets) {
+    random.seed(key);
+    int b = 0;
+    for (int j = 1; j &lt; num_buckets; j++) {
+        if (random.next() &lt; 1.0 / (j + 1))
+            b = j;
+    }
+    return b;
+}
+</code></pre></div></div>
+
+<p>很显然, 这个算法是O(n)的, 而且随着<code class="language-plaintext highlighter-rouge">j</code>越来越大, <code class="language-plaintext highlighter-rouge">b=j</code>需要执行的概率也越来越低. Google最终的算法叫<strong>Jump</strong> Consistent Hash, Jump指的是<code class="language-plaintext highlighter-rouge">j</code>是跳跃的, 那他们是怎么让<code class="language-plaintext highlighter-rouge">j</code>跳跃, 并保持结果正确呢?</p>
+
+<p>我们用概率的思路来想这个问题, 假设变化过程中的上一次结果是<code class="language-plaintext highlighter-rouge">b</code>, 下一次结果<code class="language-plaintext highlighter-rouge">j</code>大于等于一个大于<code class="language-plaintext highlighter-rouge">b</code>的数<code class="language-plaintext highlighter-rouge">i</code>的概率, 也就是<strong>可以跳到<code class="language-plaintext highlighter-rouge">i</code>的概率</strong>, 也就是从<code class="language-plaintext highlighter-rouge">b+1</code>到<code class="language-plaintext highlighter-rouge">i</code>的过程中, 桶序号都没有变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = P(ch(key, b+1)==ch(key, i))
+</code></pre></div></div>
+
+<p>这个概率也就是连续多次不变事件概率的乘积:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = P(ch(key, b+1)==ch(k, b+2)) * P(ch(key, b+2)==ch(key, b+3)) * ... * P(ch(key, i-1)==ch(key, i))
+</code></pre></div></div>
+
+<p>由于单次不变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(ch(key, i)==ch(key, i+1)) = i/(i+1)
+</code></pre></div></div>
+
+<p>所以连续多次不变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = (b+1)/(b+2) * (b+2)/(b+3) * ... * (i-1)/i = (b+1)/i
+</code></pre></div></div>
+
+<p>基于之前的代码, 当随机结果<code class="language-plaintext highlighter-rouge">r</code>小于<code class="language-plaintext highlighter-rouge">(b+1)/i</code>时跳到<code class="language-plaintext highlighter-rouge">i</code>就可以保持概率不变, 也就是任意的<code class="language-plaintext highlighter-rouge">r</code>都可以跳到<code class="language-plaintext highlighter-rouge">floor((b+1)/r)</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int ch(int key, int num_buckets) {
+    random.seed(key);
+    int b = -1;
+    int j = 0;
+    while (j &lt; num_buckets) {
+        b = j;
+        double r = random.next();
+        j = floor((b + 1) / r);
+    }
+    return b;
+}
+</code></pre></div></div>
+
+<h2 id="最终的完整代码">最终的完整代码</h2>
+
+<p>最终代码里没有用random函数, 而是写了一个基于”线性同余方法”的伪随机数产生器, 意思是一样的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int32_t JumpConsistentHash(uint64_t key, int32_t num_buckets) {
+    int64_t b = -1, j = 0;
+    while (j &lt; num_buckets) {
+        b = j;
+        key = key * 2862933555777941757ULL + 1;
+        j = (b + 1) * (double(1LL &lt;&lt; 31) / double((key &gt;&gt; 33) + 1));
+    }
+    return b;
+}
+</code></pre></div></div>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

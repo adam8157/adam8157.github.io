@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>彩色Manpages</title>
+  <meta name="description" content="有句玩笑话: “RTFM(Read the F**ing Manual)”和”RTFSC(Read the F**ing Source Code)”是解决问题最有效的两种方法.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2011/04/colorful-manual-page/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">彩色Manpages</h1>
+    <p class="post-meta"><time datetime="2011-04-20T19:22:15+08:00" itemprop="datePublished">Apr 20, 2011</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>有句玩笑话: “RTFM(Read the F**ing Manual)”和”RTFSC(Read the F**ing Source Code)”是解决问题最有效的两种方法.</p>
+
+<p>然而这么重要的man默认显示却只有一种颜色, 效果也只是简单的加粗, 下划线和闪烁, 实在是简陋, 效率也低. 所以我通过下面的配置给它加了几种颜色, 看起来舒服多了.</p>
+
+<p>我加到.bashrc中的:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export LESS_TERMCAP_mb=$'\E[05;34m'       # begin blinking
+export LESS_TERMCAP_md=$'\E[01;34m'       # begin bold
+export LESS_TERMCAP_me=$'\E[0m'           # end mode
+export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
+export LESS_TERMCAP_so=$'\E[44;33m'       # begin standout-mode
+export LESS_TERMCAP_ue=$'\E[0m'           # end underline
+export LESS_TERMCAP_us=$'\E[04;33m'       # begin underline
+</code></pre></div></div>
+
+<p>效果大概是这样:
+<img src="http://adam8157.info/uploads/2011/04/colorful_manual_page.png" alt="" /></p>
+
+<p>原理其实就是一些ANSI color escapes, 分别作用于原来的粗体, 下划线, 闪烁和提示消息, 格式如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ESC}[{attr};{bg};{fg}m
+
+attr:
+Reset         00
+Bold          01
+Italic        03
+Underline     04
+Blink         05
+Reverse       07
+No Bold       22
+No Italic     23
+No Underline  24
+No Blink      25
+No Reverse    27
+
+bg:
+BLACK         40
+RED           41
+GREEN         42
+YELLOW        43
+BLUE          44
+MAGENTA       45
+CYAN          46
+WHITE         47
+
+fg:
+BLACK         30
+RED           31
+GREEN         32
+YELLOW        33
+BLUE          34
+MAGENTA       35
+CYAN          36
+WHITE         37
+</code></pre></div></div>
+
+<p>我用的是普通的8色, 感觉还好. 但如果你跟<a href="http://roylez.heroku.com/">主席</a>一样是个颜色控, 而且你用的终端也支持, 可以将bg和fg换成256色的. 格式相应的变为下面这样, fg和bg的取值范围为0-255:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ESC}[{attr};48;05;{bg};38;05;{fg}m
+</code></pre></div></div>
+
+<p><strong>========UPDATE========</strong></p>
+
+<p>刚Publish就发现了问题, Fedora 14中上面的设置不起作用!</p>
+
+<p>查了下, 原来是因为某些发行版直接使用ANSI color escapes(也就是SGR  escape sequence)去处理粗体, 斜体和下划线, 而我先前的做法只适用于老的控制序列. 废话不多说, 详细的解释去看grotty的手册, 解决方法如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export GROFF_NO_SGR=1
+</code></pre></div></div>
+
+<p><strong>========UPDATE AGAIN========</strong></p>
+
+<p>写了个脚本(<a href="https://github.com/adam8157/scripts/blob/master/color-chart">传送门</a>), 可以打印出8色ANSI Color和256色XTERM Color, 方便颜色控们调试.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Vim配合xsel访问剪贴板</title>
+  <meta name="description" content="话说我一直在虚拟终端下用vim的, 但是有个问题, 普通版本的vim无法访问中键和系统剪贴板, 这也不是大问题, 鼠标选就是了, 但是有时候需要和虚拟机交互, 要知道我这连leafpad都没装, 所有的编辑工作全是vim, 为了这么点事把vim的图形库装上实在是让我不爽.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/05/vim-with-xsel/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Vim配合xsel访问剪贴板</h1>
+    <p class="post-meta"><time datetime="2010-05-02T14:18:07+08:00" itemprop="datePublished">May 2, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>话说我一直在虚拟终端下用vim的, 但是有个问题, 普通版本的vim无法访问中键和系统剪贴板, 这也不是大问题, 鼠标选就是了, 但是有时候需要和虚拟机交互, 要知道我这连leafpad都没装, 所有的编辑工作全是vim, 为了这么点事把vim的图形库装上实在是让我不爽.</p>
+
+<p>好在, 有xsel, 用它配合vim就能访问中键和系统剪贴板, 洁癖狂和折腾狂再一次胜利了.</p>
+
+<p>代码放在后面, 可以看到, 我把它们伪装成了*和+寄存器, 但是功能和原版的有差别, 只能先yank在再复制到剪贴板, paste没问题. 至于为什么不用xclip, xclip会因为detach在关闭vim后失效, xsel却能避免, 虽然会产生一个错误log, 但是把这个log指向/dev/null就好.</p>
+
+<p>PS: 哪位大仙如果知道如何简单将区块传给命令而不是叹号filter这种形式, 一定告诉我.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>" Use xsel to access the x clipboard
+if $DISPLAY != '' &amp;&amp; executable('xsel')
+	nnoremap &lt;silent&gt; "*y :'[,']!xsel -i -p -l /dev/null&lt;CR&gt;u
+	nnoremap &lt;silent&gt; "*p :r!xsel -p&lt;CR&gt;
+	nnoremap &lt;silent&gt; "+y :'[,']!xsel -i -b -l /dev/null&lt;CR&gt;u
+	nnoremap &lt;silent&gt; "+p :r!xsel -b&lt;CR&gt;
+endif
+</code></pre></div></div>
+
+<p>——–Better Way——–</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>" Use xsel to access the X clipboard
+if $DISPLAY != '' &amp;&amp; executable('xsel')
+	nnoremap &lt;silent&gt; "*y :'[,']w !xsel -i -p -l /dev/null&lt;CR&gt;
+	nnoremap &lt;silent&gt; "*p :r!xsel -p&lt;CR&gt;
+	nnoremap &lt;silent&gt; "+y :'[,']w !xsel -i -b -l /dev/null&lt;CR&gt;
+	nnoremap &lt;silent&gt; "+p :r!xsel -b&lt;CR&gt;
+endif
+</code></pre></div></div>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

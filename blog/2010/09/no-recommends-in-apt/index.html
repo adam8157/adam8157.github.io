@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>无视Recommends</title>
+  <meta name="description" content="话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/09/no-recommends-in-apt/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">无视Recommends</h1>
+    <p class="post-meta"><time datetime="2010-09-23T17:23:22+08:00" itemprop="datePublished">Sep 23, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里.</p>
+
+<p>所以我安装完基本Debian系统后的第一个操作就是对apt进行设置, 避免装上Recommends域的包, 像这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt; EOF | sudo tee /etc/apt/apt.conf.d/90no-recommends
+APT
+{
+	Install-Recommends 0;
+};
+EOF
+</code></pre></div></div>
+
+<p>可惜我很久之前就发现了一个问题, 一直没有解决, 例如: A depends C, B recommends C, 我将A卸载之后, 再执行autoremove操作, C却并不会被卸载掉, 因为apt将Recommends视作依赖了. 总之, 虽然我安装的时候不会去装Recommends域的包, 但是还是有可能会因为别的操作而装上这些对我来说不必要的包.</p>
+
+<p>大概纠结了一年多这个问题, 今天终于找到了解决办法:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt; EOF | sudo tee /etc/apt/apt.conf.d/90no-recommends
+APT
+{
+	Install-Recommends 0;
+	AutoRemove
+	{
+		RecommendsImportant 0;
+	}
+};
+EOF
+</code></pre></div></div>
+
+<p>顺便抱怨下apt的文档, /usr/share/doc/apt/examples/configure-index.gz中所谓的全部选项根本不全, 我现在已经忘了我在哪个犄角旮旯搜索到这个的了…</p>
+
+<p>PS: 1, autoremove不危险, 前提是你对apt的包管理体系很熟悉. 2, 我知道aptitude有Keep-Recommends的配置选项, 但是我个人不喜欢用aptitude.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

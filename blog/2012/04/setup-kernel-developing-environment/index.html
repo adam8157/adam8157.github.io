@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>搭建内核开发调试环境</title>
+  <meta name="description" content="闲来无事, 总结一下内核开发调试环境的搭建过程, 希望能对和我一样的内核新手们有所帮助.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2012/04/setup-kernel-developing-environment/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">搭建内核开发调试环境</h1>
+    <p class="post-meta"><time datetime="2012-04-05T01:00:00+08:00" itemprop="datePublished">Apr 5, 2012</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>闲来无事, 总结一下内核开发调试环境的搭建过程, 希望能对和我一样的内核新手们有所帮助.</p>
+
+<h2 id="方案">方案</h2>
+<p>我的测试系统在QEMU中运行, Host和Guest的架构都是x86_64, 用Busybox生成的initrd做为根文件系统, KGDB做为调试器.</p>
+
+<h2 id="生成内核">生成内核</h2>
+<p>内核中需要打开的选项是<code class="language-plaintext highlighter-rouge">CONFIG_EXPERIMENTAL</code>, <code class="language-plaintext highlighter-rouge">CONFIG_DEBUG_INFO</code>, <code class="language-plaintext highlighter-rouge">CONFIG_KGDB</code>和<code class="language-plaintext highlighter-rouge">CONFIG_KGDB_SERIAL_CONSOLE</code>, 同时需要关闭<code class="language-plaintext highlighter-rouge">CONFIG_DEBUG_RODATA</code>选项. 然后<code class="language-plaintext highlighter-rouge">make bzImage</code>编译生成内核. 具体选项的意义可以去翻内核文档, 这里就不罗嗦了.</p>
+
+<h2 id="生成根文件系统">生成根文件系统</h2>
+<p>打开Busybox的<code class="language-plaintext highlighter-rouge">CONFIG_STATIC</code>和<code class="language-plaintext highlighter-rouge">CONFIG_INSTALL_NO_USR</code>选项, 执行<code class="language-plaintext highlighter-rouge">make</code>和<code class="language-plaintext highlighter-rouge">make install</code>编译并生成, 然后参照下面的步骤创建initrd根文件系统:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir temp &amp;&amp; cd temp
+
+#创建系统目录
+mkdir -p dev etc/init.d mnt proc root sys tmp
+chmod a+rwxt tmp
+
+cp -rf ../busybox/_install/* ./
+
+#挂载系统目录
+cat &lt;&lt; EOF &gt; etc/fstab
+proc  /proc  proc  defaults  0  0
+sysfs  /sys  sysfs defaults  0  0
+tmpfs  /tmp  tmpfs defaults  0  0
+EOF
+
+cat &lt;&lt; EOF &gt; etc/inittab
+::sysinit:/etc/init.d/rcS
+::respawn:-/bin/sh
+tty2::askfirst:-/bin/sh
+::ctrlaltdel:/bin/umount -a -r
+EOF
+
+cat &lt;&lt; EOF &gt; etc/init.d/rcS
+#!bin/sh
+/bin/mount -a
+#用mdev生成设备文件
+/sbin/mdev -s
+EOF
+
+chmod 755 etc/init.d/rcS
+
+find ./ | cpio -o -H newc | gzip &gt; ../rootfs.img
+</code></pre></div></div>
+
+<h2 id="启动qemu">启动QEMU</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>qemu-system-x86_64 -kernel kernel.img -append \
+"root=/dev/ram rdinit=/sbin/init" -initrd rootfs.img 或
+qemu-system-x86_64 -kernel kernel.img -append \
+"root=/dev/ram rdinit=/sbin/init kgdboc=ttyS0,115200 kgdbwait" \
+-initrd rootfs.img -serial tcp::1234,server 第二个命令开启了KGDB, 将Guest系统的串口映射到了Host系统的1234端口, 并在启动过程中等待gdb的连接.
+</code></pre></div></div>
+
+<h2 id="启动gdb">启动gdb</h2>
+<p>内核开启KGDB的情况下, 执行<code class="language-plaintext highlighter-rouge">gdb vmlinux</code>, 其中vmlinux是未压缩的内核. 然后<code class="language-plaintext highlighter-rouge">target remote localhost:1234</code>连接kgdb.</p>
+
+<p>接下来就和普通的gdb没什么大的区别了, 比如在sched_clock函数处设置断点<code class="language-plaintext highlighter-rouge">break sched_clock</code>, <code class="language-plaintext highlighter-rouge">continue</code>继续运行, 到达断点后打印jiffies_64变量<code class="language-plaintext highlighter-rouge">print jiffies_64</code>等等.</p>
+
+<p>另外, 运行过程中可以在测试系统里执行<code class="language-plaintext highlighter-rouge">echo g &gt; /proc/sysrq-trigger</code>让gdb重新得到控制权.</p>
+
+<h2 id="for-懒人">For 懒人</h2>
+<p>顺手在github上建了个项目, 可以自动搭建整个内核开发调试环境, 详见README.</p>
+
+<p><a href="http://github.com/adam8157/kernel-studio">http://github.com/adam8157/kernel-studio</a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git://github.com/adam8157/kernel-studio.git
+</code></pre></div></div>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>Nov 22, 2019</span>
+    </p>
+
+    <h1><a href="/blog/2019/11/why-does-offlineimap-not-work-with-launchd/">Why does offlineimap not work with launchd</a></h1>
+
+    <div class="content">
+      <p><strong>TL;DR, don’t place your Maildir into Documents, Downloads or Desktop.</strong></p>
+
+<p>I’m a heavy user of offlineimap. Thanks to Homebrew, which provides a quite nice plist (which stands for “property list”) file for macOS’s launchd to start the service at login, the offlineimap always works well until macOS <del>Vista</del> Catalina.</p>
+
+<p>Days ago, after I upgraded the system to Catalina, offlineimap stopped working, no new mails got in at all. Although I appreciate the break, it’s a thing need to be fixed.</p>
+
+<ol>
+  <li>Run <code class="language-plaintext highlighter-rouge">offlineimap -o</code> directly, good, so it’s a launchd thing.</li>
+  <li>Enable the launchd logging, it reports “Operation not permitted” when <code class="language-plaintext highlighter-rouge">os.listdir()</code>, what?</li>
+  <li>Check the UID, it has the permission.</li>
+  <li>Check the effective UID, it’s the same as the UID.</li>
+</ol>
+
+<p>After almost two hours’ searching, I got nothing interesting and went back to think “Why does it not work after upgrading to Catalina?”</p>
+
+<p>The answer is right in <a href="https://developer.apple.com/documentation/macos_release_notes/macos_catalina_10_15_release_notes">macOS Catalina Release Notes</a>:</p>
+
+<blockquote>
+  <p>Launch daemons and launch agents introduce new user privacy protections. Specifying privacy-sensitive files and folders in a launchd property list might not work as expected and prevent the service from running.</p>
+</blockquote>
+
+<p>🙄 Good work, Apple.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jun 30, 2018</span>
+    </p>
+
+    <h1><a href="/blog/2018/06/jump-consistent-hash-explained/">Jump consistent hash算法分析</a></h1>
+
+    <div class="content">
+      <p><a href="https://arxiv.org/pdf/1406.2294.pdf" title="论文链接">Jump Consistent Hash</a>是一个来自Google的快速, 几乎没有内存消耗的一致性哈希算法. 这篇文章是我的翻译和理解思路.</p>
+
+<h2 id="哈希算法的设计目标">哈希算法的设计目标</h2>
+
+<ol>
+  <li>平衡性, 把对象均匀地分布在所有桶(bucket)中.</li>
+  <li>单调性, 当桶的数量变化时, 只需要把一些对象从旧桶移动到新桶, 不需要做其它(例如旧桶之间的)移动.</li>
+</ol>
+
+<p>比如一个分布式存储的系统, 按哈希分布带来优化的便利, 平衡性可以避免数据倾斜, 单调性则使得扩容和减容更快速.</p>
+
+<h2 id="算法的设计思路">算法的设计思路</h2>
+
+<p>我们用循序渐进的思路来设计, <code class="language-plaintext highlighter-rouge">ch(key, num_buckets)</code>为桶数为num_buckets时的hash函数, 为了满足设计目标, 需要:</p>
+
+<ol>
+  <li>num_buckets为1时, 任意key, <code class="language-plaintext highlighter-rouge">ch(key, 1)==0</code>, 全落在第0个桶里.</li>
+  <li>num_buckets由1<strong>变为</strong>2后, <code class="language-plaintext highlighter-rouge">ch(key, 2)</code>应该有1/2的结果保持为0, 有1/2变为1.</li>
+  <li>…</li>
+  <li>num_buckets由n<strong>变为</strong>n+1后, <code class="language-plaintext highlighter-rouge">ch(key, n+1)</code>应该有n/(n+1)的结果保持不变, 有1/(n+1)跳变为n+1.</li>
+</ol>
+
+<p>因此, 只要我们用一个分布均匀的函数, 例如伪随机数生成器, 并且让这个伪随机数生成器的状态只依赖于key, 从0个桶开始推导, 变到第num_buckets个桶, 结果就是我们想要的hash值:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int ch(int key, int num_buckets) {
+    random.seed(key);
+    int b = 0;
+    for (int j = 1; j &lt; num_buckets; j++) {
+        if (random.next() &lt; 1.0 / (j + 1))
+            b = j;
+    }
+    return b;
+}
+</code></pre></div></div>
+
+<p>很显然, 这个算法是O(n)的, 而且随着<code class="language-plaintext highlighter-rouge">j</code>越来越大, <code class="language-plaintext highlighter-rouge">b=j</code>需要执行的概率也越来越低. Google最终的算法叫<strong>Jump</strong> Consistent Hash, Jump指的是<code class="language-plaintext highlighter-rouge">j</code>是跳跃的, 那他们是怎么让<code class="language-plaintext highlighter-rouge">j</code>跳跃, 并保持结果正确呢?</p>
+
+<p>我们用概率的思路来想这个问题, 假设变化过程中的上一次结果是<code class="language-plaintext highlighter-rouge">b</code>, 下一次结果<code class="language-plaintext highlighter-rouge">j</code>大于等于一个大于<code class="language-plaintext highlighter-rouge">b</code>的数<code class="language-plaintext highlighter-rouge">i</code>的概率, 也就是<strong>可以跳到<code class="language-plaintext highlighter-rouge">i</code>的概率</strong>, 也就是从<code class="language-plaintext highlighter-rouge">b+1</code>到<code class="language-plaintext highlighter-rouge">i</code>的过程中, 桶序号都没有变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = P(ch(key, b+1)==ch(key, i))
+</code></pre></div></div>
+
+<p>这个概率也就是连续多次不变事件概率的乘积:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = P(ch(key, b+1)==ch(k, b+2)) * P(ch(key, b+2)==ch(key, b+3)) * ... * P(ch(key, i-1)==ch(key, i))
+</code></pre></div></div>
+
+<p>由于单次不变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(ch(key, i)==ch(key, i+1)) = i/(i+1)
+</code></pre></div></div>
+
+<p>所以连续多次不变的概率为:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>P(j&gt;=i) = (b+1)/(b+2) * (b+2)/(b+3) * ... * (i-1)/i = (b+1)/i
+</code></pre></div></div>
+
+<p>基于之前的代码, 当随机结果<code class="language-plaintext highlighter-rouge">r</code>小于<code class="language-plaintext highlighter-rouge">(b+1)/i</code>时跳到<code class="language-plaintext highlighter-rouge">i</code>就可以保持概率不变, 也就是任意的<code class="language-plaintext highlighter-rouge">r</code>都可以跳到<code class="language-plaintext highlighter-rouge">floor((b+1)/r)</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int ch(int key, int num_buckets) {
+    random.seed(key);
+    int b = -1;
+    int j = 0;
+    while (j &lt; num_buckets) {
+        b = j;
+        double r = random.next();
+        j = floor((b + 1) / r);
+    }
+    return b;
+}
+</code></pre></div></div>
+
+<h2 id="最终的完整代码">最终的完整代码</h2>
+
+<p>最终代码里没有用random函数, 而是写了一个基于”线性同余方法”的伪随机数产生器, 意思是一样的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>int32_t JumpConsistentHash(uint64_t key, int32_t num_buckets) {
+    int64_t b = -1, j = 0;
+    while (j &lt; num_buckets) {
+        b = j;
+        key = key * 2862933555777941757ULL + 1;
+        j = (b + 1) * (double(1LL &lt;&lt; 31) / double((key &gt;&gt; 33) + 1));
+    }
+    return b;
+}
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 31, 2018</span>
+    </p>
+
+    <h1><a href="/blog/2018/05/how-greenplum-plans-a-join/">How Greenplum plans a JOIN</a></h1>
+
+    <div class="content">
+      <h2 id="what-is-a-join">What is a “JOIN”</h2>
+
+<p>INNER JOIN is an <strong>AND</strong>, OUTER JOIN is an <strong>OR</strong>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>id name       id  name
+-- ----       --  ----
+1  Pirate     1   Rutabaga
+2  Monkey     2   Pirate
+3  Ninja      3   Darth Vader
+4  Spaghetti  4   Ninja
+</code></pre></div></div>
+
+<p>INNER JOIN’s results are those tuples in table A <strong>AND</strong> B.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+INNER JOIN TableB
+ON TableA.name = TableB.name;
+
+ id |  name  | id |  name
+----+--------+----+--------
+  3 | Ninja  |  4 | Ninja
+  1 | Pirate |  2 | Pirate
+(2 rows)
+</code></pre></div></div>
+
+<p>FULL [OUTER] JOIN’s results are those tuples in table A <strong>OR</strong> B.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.name = TableB.name;
+ id |   name    | id |    name
+----+-----------+----+-------------
+  3 | Ninja     |  4 | Ninja
+    |           |  3 | Darth Vader
+  2 | Monkey    |    |
+  1 | Pirate    |  2 | Pirate
+    |           |  1 | Rutabaga
+  4 | Spaghetti |    |
+(6 rows)
+</code></pre></div></div>
+
+<p>LEFT [OUTER] JOIN’s results are those tuples in table A <strong>OR</strong> (A <strong>AND</strong> B).</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.name = TableB.name;
+
+ id |   name    | id |  name
+----+-----------+----+--------
+  1 | Pirate    |  2 | Pirate
+  3 | Ninja     |  4 | Ninja
+  2 | Monkey    |    |
+  4 | Spaghetti |    |
+(4 rows)
+</code></pre></div></div>
+
+<h3 id="join-is-not-simple-in-greenplum">JOIN is not simple in Greenplum</h3>
+
+<p>Greenplum is (was ?) a shared-nothing distributed data warehouse, data transferring (motion) between nodes costs a lot.</p>
+
+<p>To have a better performance, Greenplum needs to avoid motions and loops as possible.</p>
+
+<h2 id="how-does-greenplum-choose-the-path">How does Greenplum choose the path</h2>
+
+<h3 id="build_simple_rel"><strong>build_simple_rel()</strong></h3>
+
+<p>This stage is to get the info how data are distributed, GpPolicy.</p>
+
+<p>The data to store are partitioned onto segment databases, the other data, for internal use like catalog, are not partitioned.</p>
+
+<p>Entry database, I take it as the main backend, which <strong>holds</strong> none or all, but not a part of the data when processing.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/*
+ * GpPolicyType represents a type of policy under which a relation's
+ * tuples may be assigned to a component database.
+ */
+typedef enum GpPolicyType
+{
+    POLICYTYPE_PARTITIONED,     /* Tuples partitioned onto segment database. */
+    POLICYTYPE_ENTRY            /* Tuples stored on entry database. */
+} GpPolicyType;
+</code></pre></div></div>
+
+<h3 id="set_base_rel_pathlists"><strong>set_base_rel_pathlists()</strong></h3>
+
+<p>Finds <strong>all</strong> paths available for scanning each base-relation entry, sequential scan and any available indices are considered.</p>
+
+<p>RTE_FUNCTION: create_functionscan_path()<br />
+RTE_RELATION: create_external_path() / create_aocs_path() / create_seqscan_path() / create_index_paths() …<br />
+RTE_VALUES: create_valuesscan_path()</p>
+
+<h3 id="create_xxx_path"><strong>create_xxx_path()</strong></h3>
+
+<p>Decide Locus (location, describing the distribution of a base relation).</p>
+
+<p>The difference between entry policy and entry locus is that, entry database is a concept of how data store, entry locus is where data come from.</p>
+
+<p>For instances, catalog’s locus is <code class="language-plaintext highlighter-rouge">General</code> and its policy is <code class="language-plaintext highlighter-rouge">Entry</code>; The value to insert, its locus is <code class="language-plaintext highlighter-rouge">Entry</code>, data go into master firstly; <code class="language-plaintext highlighter-rouge">generate_series()</code>’s locus is <code class="language-plaintext highlighter-rouge">SingleQE</code>, it could be planned onto any db.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>typedef enum CdbLocusType
+{
+    CdbLocusType_Null,
+    CdbLocusType_Entry,         /* a single backend process on the entry db:
+                                 * usually the qDisp itself, but could be a
+                                 * qExec started by the entry postmaster.
+                                 */
+    CdbLocusType_SingleQE,      /* a single backend process on any db: the
+                                 * qDisp itself, or a qExec started by a
+                                 * segment postmaster or the entry postmaster.
+                                 */
+    CdbLocusType_General,       /* compatible with any locus (data is
+                                 * self-contained in the query plan or
+                                 * generally available in any qExec or qDisp) */
+    CdbLocusType_Replicated,    /* replicated over all qExecs of an N-gang */
+    CdbLocusType_Hashed,        /* hash partitioned over all qExecs of N-gang */
+    CdbLocusType_HashedOJ,      /* result of hash partitioned outer join */
+    CdbLocusType_Strewn,        /* partitioned on no known function */
+    CdbLocusType_End            /* = last valid CdbLocusType + 1 */
+} CdbLocusType;
+</code></pre></div></div>
+
+<h3 id="make_rel_from_joinlist"><strong>make_rel_from_joinlist()</strong></h3>
+
+<p>Build access paths using a “joinlist” to guide the join path search, nestloop, merge, hash?</p>
+
+<h3 id="standard_join_search---set_cheapest"><strong>standard_join_search() -&gt; set_cheapest()</strong></h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for_each_cell(p, lnext(list_head(parent_rel-&gt;pathlist)))
+{
+	Path       *path = (Path *) lfirst(p);
+	compare_path_costs(..., path, ...)
+	if (BETTER)
+		cheapest_total_path = path;
+}
+</code></pre></div></div>
+
+<h2 id="quizzes">Quizzes</h2>
+
+<p>What and where are the motions? <code class="language-plaintext highlighter-rouge">Entry</code>, <code class="language-plaintext highlighter-rouge">SingleQE</code>, <code class="language-plaintext highlighter-rouge">General</code>, <code class="language-plaintext highlighter-rouge">Hashed</code> and <code class="language-plaintext highlighter-rouge">Strewn</code> locuses, <strong>join</strong> and <strong>left join</strong>, each other?</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Aug 15, 2017</span>
+    </p>
+
+    <h1><a href="/blog/2017/08/fix-out-of-pty-devices/">Fix "out of pty devices" in Guardian containers</a></h1>
+
+    <div class="content">
+      <h2 id="who-are-affected">Who are affected</h2>
+
+<p>Some certain Linux distros as Guardian containers, like SLES jobs on Concourse.</p>
+
+<h2 id="how-to-reproduce">How to reproduce</h2>
+
+<p>Create a SLES 11 SP4 Guardian container, then</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># useradd john
+# su - john
+$ python -c "import pty; pty.fork()"
+...
+OSError: out of pty devices
+</code></pre></div></div>
+
+<h2 id="why-is-this">Why is this</h2>
+
+<blockquote>
+  <p>A pseudo TTY (or “PTY”) is a pair of devices — a slave and a master — that provide a special sort of communication channel.</p>
+</blockquote>
+
+<blockquote>
+  <p>Linux has a virtual filesystem called <code class="language-plaintext highlighter-rouge">devpts</code> that is normally mounted at <code class="language-plaintext highlighter-rouge">/dev/pts</code>. Whenever a new pseudo TTY is created, a device node for the slave is created in that virtual filesystem.</p>
+</blockquote>
+
+<blockquote>
+  <p>“Unix98” Single Unix Specification (SUS) requires that the group ID of the slave device should not be that of the creating process, but rather some definite, though unspecified, value. The GNU C Library (glibc) takes responsibility for implementing this requirement; it quite reasonably chooses the ID of the group named “tty” (often 5) to fill this role. If the devpts filesystem is mounted with options gid=5,mode=620, this group ID and the required access mode will be used and glibc will be happy. If not, glibc will (if so configured) run a setuid helper found at /usr/libexec/pt_chown.</p>
+</blockquote>
+
+<p>The problem is some Linux distros don’t provide the setuid helper <code class="language-plaintext highlighter-rouge">pt_chown</code>, if <code class="language-plaintext highlighter-rouge">devpts</code> is not mounted with option <code class="language-plaintext highlighter-rouge">gid=5</code>, the device node could not be created with <code class="language-plaintext highlighter-rouge">tty</code> group.</p>
+
+<h2 id="fix-and-workaround">Fix and workaround</h2>
+
+<p>Guardian’s default mount options are fixed now, workaround is adding normal users into <code class="language-plaintext highlighter-rouge">tty</code> group.</p>
+
+<h3 id="ref">ref:</h3>
+<p>1, <a href="https://lwn.net/Articles/688809/">https://lwn.net/Articles/688809/</a><br />
+2, <a href="https://en.wikipedia.org/wiki/Single_UNIX_Specification">https://en.wikipedia.org/wiki/Single_UNIX_Specification</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>May 26, 2017</span>
+    </p>
+
+    <h1><a href="/blog/2017/05/understanding-_GLIBCXX_USE_CXX11_ABI/">Understanding _GLIBCXX_USE_CXX11_ABI</a></h1>
+
+    <div class="content">
+      <p>C++程序发布时需要自带运行时么? 我觉得很有必要. 因为即使C++标准相同, ABI也不一定.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;iostream&gt;
+
+int main()
+{
+    std::string str = "Hello, world!\n";
+    std::cout &lt;&lt; str;
+
+    return 0;
+}
+</code></pre></div></div>
+
+<p>这样一个简单的C++程序, 用g++ 6.2.0和C++98标准编译后的二进制文件放到CentOS 5上运行会提示:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./a.out: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by ./a.out)
+</code></pre></div></div>
+
+<p>又没有用什么很新的特性, 还指定了C++98标准, CentOS上的g++ 4.1.2当然也支持C++98, 为什么还会报错?</p>
+
+<p>因为从GCC 5.1开始[1], <code class="language-plaintext highlighter-rouge">std::string</code>和<code class="language-plaintext highlighter-rouge">std::list</code>使用了新的C++11的ABI, <strong>即使你显式指定使用老标准</strong>.</p>
+
+<p>解决方法不难, 手动将_GLIBCXX_USE_CXX11_ABI宏置0就可以了, 当然, 为了避免更多的麻烦(谁知道哪儿还有坑呢?), 你也可以自带运行时发布, 感谢GCC Runtime Library Exception[2], 即使私有软件也是可以的.</p>
+
+<p>为什么GCC要这么做呢? 我是不大理解, 官方文档说因为这样就保证可以和C++11的代码链接了, <strong>即使你显式指定使用老标准</strong>, 惊不惊喜?</p>
+
+<h3 id="ref">ref:</h3>
+<p>1, <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html">https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html</a><br />
+2, <a href="https://www.gnu.org/licenses/gcc-exception-3.1.en.html">https://www.gnu.org/licenses/gcc-exception-3.1.en.html</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Apr 30, 2016</span>
+    </p>
+
+    <h1><a href="/blog/2016/04/autodependencies-with-make/">自动处理Make的依赖关系</a></h1>
+
+    <div class="content">
+      <h2 id="make是如何工作的">Make是如何工作的</h2>
+
+<p>简单说, Makefile中指定目标和依赖, 然后Make运行的时候会检测文件的时间信息, 如果目标落后于依赖的修改时间则目标需要重新生成, 以此达到按需生成, 节省时间的目的.</p>
+
+<h2 id="实际场景中的问题是什么">实际场景中的问题是什么</h2>
+
+<p>举个简单的例子:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>OBJS := foo.o bar.o
+
+program: $(OBJS)
+	gcc $(OBJS) -o program
+
+%.o: %.c
+	gcc -c $(CFLAGS) $&lt; -o $@
+</code></pre></div></div>
+
+<p>这个Makefile表达的意思是由<code class="language-plaintext highlighter-rouge">foo.c</code>和<code class="language-plaintext highlighter-rouge">bar.c</code>生成<code class="language-plaintext highlighter-rouge">program</code>, 中间目标文件分别依赖相应的源文件. 但是实际场景远没有这么简单, 例如每个<code class="language-plaintext highlighter-rouge">.o</code>还会各自依赖很多不同的<code class="language-plaintext highlighter-rouge">.h</code>头文件, 怎么办? 挨个列出来么? 太麻烦了, 而且依赖关系还可能会变化.</p>
+
+<h2 id="依赖关系能自动生成么">依赖关系能自动生成么</h2>
+
+<p>当然可以, 直接看代码:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>OBJS := foo.o bar.o
+
+program: $(OBJS)
+	gcc $(OBJS) -o program
+
+-include $(OBJS:.o=.d)
+
+%.o: %.c
+	gcc -MD -MP -c $(CFLAGS) $&lt; -o $@
+</code></pre></div></div>
+
+<p>相较于之前的版本, 这次每个<code class="language-plaintext highlighter-rouge">.o</code>的编译过程中都会生成一个Makefile语法的<code class="language-plaintext highlighter-rouge">.d</code>文件, 里面列出了gcc分析得出的依赖关系. 所以当我们把这些<code class="language-plaintext highlighter-rouge">.d</code>文件包含进来之后, Make就可以知道详细的依赖关系信息, 进而判断哪些依赖发生了变化, 哪些目标需要重新生成.</p>
+
+<p>PS, 如果你不想把系统头文件也列在依赖里面, 可以把参数<code class="language-plaintext highlighter-rouge">-MD</code>换成<code class="language-plaintext highlighter-rouge">-MMD</code>.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Mar 14, 2016</span>
+    </p>
+
+    <h1><a href="/blog/2016/03/linux-profiler-perf/">Linux下的性能分析工具: Perf</a></h1>
+
+    <div class="content">
+      <h2 id="什么是perf">什么是Perf</h2>
+
+<p>Perf是一个与Linux Kernel紧密结合的软件性能分析工具.</p>
+
+<h2 id="perf的工作原理">Perf的工作原理</h2>
+
+<p>Perf的基本原理是hook事件, 对被分析对象进行采样, 获取数据并分析. 例如在时钟中断触发时采样context可以分析函数的运行时间, 在cache miss触发时采样可以分析缓存的工作效率. 此外, Perf还支持缺页, 进程切换, 具体内核函数等事件, 具体可以参考<code class="language-plaintext highlighter-rouge">perf list</code>.</p>
+
+<h2 id="perf怎么用">Perf怎么用</h2>
+
+<ul>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">perf stat ./a.out</code>, <code class="language-plaintext highlighter-rouge">perf stat -p 1234</code>, 分析程序的整体性能, 可以看到程序的CPU使用率, 进程切换次数, cache利用情况等等.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">perf top</code>, 类似top命令, 可以分析整个系统当前的状态, 例如寻找当前系统最耗时的用户进程或者内核函数.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">perf record</code>和<code class="language-plaintext highlighter-rouge">perf report</code>, 可以记录并分析一段时间内的性能事件.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">perf --help</code> :)</p>
+  </li>
+</ul>
+
+<h2 id="happy-π-day">Happy π day!</h2>
+
+<p>这只是篇简介, 主旨是要说明Perf很强大很易用<del>以及更新一下blog</del>. 另外, 圆周率日快乐!</p>
+
+<h2 id="ref">ref:</h2>
+
+<p>1, <a href="https://perf.wiki.kernel.org/">https://perf.wiki.kernel.org/</a><br />
+2, <a href="http://www.brendangregg.com/perf.html">http://www.brendangregg.com/perf.html</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Aug 31, 2015</span>
+    </p>
+
+    <h1><a href="/blog/2015/08/why-does-tortoise-and-hare-algorithm-work/">龟兔算法为什么有效</a></h1>
+
+    <div class="content">
+      <h2 id="什么是龟兔算法">什么是龟兔算法</h2>
+
+<p>检测单链表上的环有个很经典的算法叫做”弗洛伊德判圈算法”, 也叫”龟兔算法”.</p>
+
+<h2 id="龟兔算法的基本思路">龟兔算法的基本思路</h2>
+
+<h3 id="是否有环">是否有环</h3>
+
+<p>我们让龟(tortoise)和兔(hare)从单链表的起点出发, 每次龟走一步, 兔走两步, 如果time_a步之后龟兔相遇, 则该链表有环.</p>
+
+<h3 id="环的长度">环的长度</h3>
+
+<p>上述算法刚判断出存在环时, 龟和兔位于同一节点. 此时让兔不动, 而龟不断前进, 肯定又会相遇, 而这一次龟前进的步数显然就是环的长度length.</p>
+
+<h3 id="环的起点">环的起点</h3>
+
+<p>还是之前所说龟兔相遇的节点, 首先兔保持原位, 而把龟置回链表起点, 然后龟和兔同时走, 每次都走一步, 经过time_b步最终再次相遇, 则这次相遇的节点就是环的起点start.</p>
+
+<h2 id="龟兔算法为什么有效">龟兔算法为什么有效</h2>
+
+<p>假设兔每次走step步, 那么只要单链表中存在环, 而且龟到达环的起点之后, 龟和兔之间的路程差能够是环长度length的整数倍, 则二者就能相遇. 即:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((step - 1) * time_a) % length == 0  &amp;&amp; time_a &gt;= start
+</code></pre></div></div>
+
+<p>其中start和length是固定的, time_a却无限增长, 所以总会有机会整除, 所以龟兔算法可以判断是否有环.</p>
+
+<p>略过显而易见的长度计算, 接着说查找环的起点. 当仅当step为2, 即兔每次走两步时, 根据前面的条件得知time_a能被length整除. 于是我们接着假设time_b为龟到达环的起点start后绕了n圈再次到达起点, 即<code class="language-plaintext highlighter-rouge">time_b == start + n * length</code>, 则兔此时的位置(假设绕了m圈)是<code class="language-plaintext highlighter-rouge">time_a + time_b - m * length</code>, 代入后为<code class="language-plaintext highlighter-rouge">time_a + start + (n - m) * length</code>, 因为step为2时time_a能被length整除, 所以兔此时正好也在起点start处, 所以龟兔算法可以找到环的起点.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Apr 26, 2015</span>
+    </p>
+
+    <h1><a href="/blog/2015/04/hybrid-bootable-usb-stick-for-uefi-and-legacy-bios/">Hybrid bootable USB stick for legacy BIOS & UEFI</a></h1>
+
+    <div class="content">
+      <p>This is a simple note for people who are googling this topic right now, and you are welcome.</p>
+
+<h2 id="backgrounds">Backgrounds</h2>
+
+<ul>
+  <li>
+    <p>Legacy BIOS needs bootloaders to be installed into MBR and the reserved space after it.</p>
+  </li>
+  <li>
+    <p>UEFI only needs bootloaders in ESP(EFI System Partition).</p>
+  </li>
+  <li>
+    <p>There is no resource competition between legacy BIOS and UEFI requirements.</p>
+  </li>
+</ul>
+
+<h2 id="preparations">Preparations</h2>
+
+<ul>
+  <li>
+    <p>grub-pc-bin and grub-efi-amd64-bin packages for Debian users.</p>
+  </li>
+  <li>
+    <p>An USB storage stick, MBR or GPT. Some unallocated space(1MB is enough) at the beginning of disk if you are using GPT.</p>
+  </li>
+  <li>
+    <p>A vfat partition with the “boot” flag.</p>
+  </li>
+</ul>
+
+<h2 id="cooking">Cooking</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># mount /dev/sdb1 /media/sdb1
+
+# grub-install --target=i386-pc --boot-directory=/media/sdb1/boot /dev/sdb
+
+# grub-install --target=x86_64-efi --efi-directory=/media/sdb1/ --boot-directory=/media/sdb1/boot --removable /dev/sdb
+</code></pre></div></div>
+
+<h2 id="configurationjust-a-template">Configuration(just a template)</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># /media/sdb1/boot/grub/grub.cfg
+set root=(hd0,1)
+
+menuentry "FreeDOS" {
+        linux16  /boot/freedos/memdisk
+        initrd16 /boot/freedos/balder10.img
+}
+menuentry "Memtest86+" {
+        loopback loop /boot/systemrescuecd-x86-x.y.z.iso
+        linux16 (loop)/bootdisk/memtestp
+}
+menuentry "Ubuntu xx.yy" {
+        set isofile="/boot/ubuntu-xx.yy-desktop-amd64.iso"
+        loopback loop $isofile
+        linux (loop)/casper/vmlinuz.efi boot=casper iso-scan/filename=$isofile noprompt noeject
+        initrd (loop)/casper/initrd.lz
+}
+menuentry "SystemRescueCd" {
+        set isofile="/boot/systemrescuecd-x86-x.y.z.iso"
+        loopback loop $isofile
+        linux   (loop)/isolinux/rescue64 docache isoloop=$isofile
+        initrd  (loop)/isolinux/initram.igz
+}
+menuentry "Install Debian GNU/Linux" {
+        linux   /boot/debian/vmlinuz priority=low recommends=false
+        initrd  /boot/debian/initrd.gz
+}
+menuentry "Debian GNU/Linux Rescue Mode" {
+        linux   /boot/debian/vmlinuz priority=low recommends=false rescue/enable=true
+        initrd  /boot/debian/initrd.gz
+}
+</code></pre></div></div>
+
+<p>Done, enjoy fixing others’ computers then, which I already quit :D</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 23, 2014</span>
+    </p>
+
+    <h1><a href="/blog/2014/11/use-gnu-global-for-source-code-tagging/">使用GNU GLOBAL索引代码</a></h1>
+
+    <div class="content">
+      <h2 id="什么是global">什么是GLOBAL</h2>
+
+<p><a href="https://www.gnu.org/software/global/">GLOBAL</a>是GNU出品的一款代码索引工具.</p>
+
+<h2 id="global有什么优点">GLOBAL有什么优点</h2>
+
+<ul>
+  <li>
+    <p>原生支持C, C++, 汇编等6种语言的代码索引, 借助插件支持的更多达25种</p>
+  </li>
+  <li>
+    <p>支持多种查找功能, 例如最常用的查找定义, 调用和文件位置等</p>
+  </li>
+  <li>
+    <p>提供gtags-cscope命令, 兼容cscope</p>
+  </li>
+  <li>
+    <p>相对于cscope, 查找匹配更加快速和准确</p>
+  </li>
+  <li>
+    <p>支持增量更新, 而且比cscope的增量更新快很多很多</p>
+  </li>
+  <li>
+    <p>开发活跃, 上一次发布新版本是两个月前, 而cscope的上一次是两年前</p>
+  </li>
+</ul>
+
+<h2 id="如何使用global">如何使用GLOBAL</h2>
+
+<p>简单讲, 在代码目录中执行<code class="language-plaintext highlighter-rouge">gtags -i</code>建立索引数据库, 然后使用global命令查找匹配. 例如<code class="language-plaintext highlighter-rouge">global symbol</code>查看symbol的定义, <code class="language-plaintext highlighter-rouge">global -r symbol</code>查看symbol在哪被引用, 等等. 详见: <a href="https://www.gnu.org/software/global/globaldoc_toc.html">https://www.gnu.org/software/global/globaldoc_toc.html</a></p>
+
+<h2 id="vim中使用global的小技巧">Vim中使用GLOBAL的小技巧</h2>
+
+<p>继承Vim中cscope的接口和键绑定:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:set cscopeprg=gtags-cscope
+</code></pre></div></div>
+
+<p>自动从当前文件夹递归向上搜索索引数据库并加载:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>function! LoadDatabase()
+	let db = findfile("GTAGS", ".;")
+	if (!empty(db))
+		set nocscopeverbose
+		exe "cs add " . db
+		set cscopeverbose
+	endif
+endfunction
+autocmd BufEnter *.[ch] call LoadDatabase()
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <span>&laquo; Prev</span>
+  
+
+  
+    
+      <em>1</em>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <a href="/blog/page5/">5</a>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page2/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

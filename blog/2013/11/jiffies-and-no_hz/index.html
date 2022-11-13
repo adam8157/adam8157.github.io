@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>jiffies和NO_HZ</title>
+  <meta name="description" content="Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2013/11/jiffies-and-no_hz/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">jiffies和NO_HZ</h1>
+    <p class="post-meta"><time datetime="2013-11-09T18:00:00+08:00" itemprop="datePublished">Nov 9, 2013</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等.</p>
+
+<h2 id="jiffies">jiffies</h2>
+
+<p>为了让内核能够感知时间, 硬件提供了时钟发生器, 它可以被编程以某个固定频率自行触发时间中断, 然后内核藉由中断服务程序来处理时间驱动的事件. 时钟发生器的频率就是HZ, 意味着时钟发生器每HZ分之一秒产生一个节拍, 而自系统启动以来产生的总节拍数就是全局变量jiffies.</p>
+
+<p>jiffies变量的类型是unsigned long, 如果体系结构为32位, 时钟频率为1000, 这个变量大概50天后就会溢出. 所以使用jiffies的关键是不要直接进行比较而要使用内核提供的宏, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;linux/jiffies.h&gt;
+#define time_after(a,b) ...
+#define time_before(a,b) ...
+#define time_in_range(a,b,c) ...
+</code></pre></div></div>
+
+<h2 id="no_hz">NO_HZ</h2>
+
+<p>回过来说HZ, 它的值应该被设定为多少呢? 频率低了的话, 精度不够, 影响整个系统的实时性; 频率高虽然能提高精度和实时性, 但又会造成系统负担过重, 大量的时间被用来处理时钟中断服务程序. 而且由于使用场景的不同, HZ并没有一个通用的理想值, 内核的默认值也曾多次改变.</p>
+
+<p>为了兼顾实时性和能耗, 内核从2.6.17开始引入了tickless的特性, 也被称为NO_HZ. 发展到现在(3.10之后, 目前3.12), 内核为此功能提供了三个选项:</p>
+
+<ol>
+  <li>CONFIG_HZ_PERIODIC, 每个节拍都不会被忽略.</li>
+  <li>CONFIG_NO_HZ_IDLE, 默认设置, 节拍在空闲的CPU上会被忽略.</li>
+  <li>CONFIG_NO_HZ_FULL, 节拍在空闲的或者只有一个可执行任务的CPU上会被忽略.</li>
+</ol>
+
+<p>之所以默认启用是因为tickless有着立竿见影的好处, 省电和降低负载, 尤其是在移动, 虚拟化和高性能运算等环境下.</p>
+
+<h2 id="ref">ref:</h2>
+<p>1, <a href="https://lwn.net/Articles/549580/">https://lwn.net/Articles/549580/</a><br />
+2, <a href="https://www.kernel.org/doc/Documentation/timers">https://www.kernel.org/doc/Documentation/timers</a></p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>terminal, bash和screen的配合</title>
+  <meta name="description" content="首先, 术业有专攻, 命令行和图形界面不是水火不容, 我都用的很多, 少了哪个也不行.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/05/terminal-bash-screen/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">terminal, bash和screen的配合</h1>
+    <p class="post-meta"><time datetime="2010-05-23T14:14:51+08:00" itemprop="datePublished">May 23, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>首先, 术业有专攻, 命令行和图形界面不是水火不容, 我都用的很多, 少了哪个也不行.</p>
+
+<p>其中关于命令行, 我基本上不进console, 毕竟分辨率, 字体, 中文什么的都比较恼火. 自己电脑就是xterm+screen+bash, 办公室就是用putty+ssh+screen+bash. 想要有一个舒服的使用环境, 就得把这几个家伙配合好.</p>
+
+<p>想要实现一个什么效果呢? 最好运行screen的时候, 每个window的title为路径或者当前运行的程序, xterm的title为screen: 加上当前window的title; 而单独运行xterm的时候, xterm的title为user@host: path. 比较晕是吧? 看我的效果图:</p>
+
+<p><img src="http://adam8157.info/uploads/2010/05/screen_path.png" alt="" />
+<img src="http://adam8157.info/uploads/2010/05/screen_program.png" alt="" />
+<img src="http://adam8157.info/uploads/2010/05/xterm_path.png" alt="" /></p>
+
+<p>下面是一些关键的配置, 其它部分在此: <a href="https://github.com/adam8157/dotfiles">https://github.com/adam8157/dotfiles</a></p>
+
+<p>bash的.bashrc:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#screen and xterm's dynamic title
+case $TERM in
+	xterm*)
+		# Set xterm's title
+		TITLEBAR='\[\e]0;\u@\h:\w\a\]'
+		PS1="${TITLEBAR}${PS1}"
+		;;
+	screen*)
+		# Use path as title
+		PATHTITLE='\[\ek\W\e\\\]'
+		# Use program name as title
+		PROGRAMTITLE='\[\ek\e\\\]'
+		PS1="${PROGRAMTITLE}${PATHTITLE}${PS1}"
+		;;
+	*)
+		;;
+esac
+</code></pre></div></div>
+
+<p>screen的.screenrc:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Caption line
+caption always "%{= R}[ %{=b b}%-w%{=rb db}%&gt;%n %t%{-}%+w%{-b}%&lt; %=%{R}][%{M}%D %M %d %{G}%c%{R}]"
+
+# Dynamic title
+shelltitle '$ |bash'
+
+# Set xterm's title
+hardstatus string "screen: %t"
+</code></pre></div></div>
+
+<p>bash中主要是设置了几个escape sequences, 具体都是screen和xterm自己定义的, 把它们塞到PS1中, 看不到的同时还能给screen和xterm发信号, 让它们改对应的title.</p>
+
+<p>screen中状态栏选用Caption而不用Hardstatus实现, 是因为要把xterm的title伪装成Hardstatus, 这个可能算个历史遗留问题, putty也是这么处理的. shelltitle就是实现将所运行程序的名称作为screen的title的功能, 默认bash,, 有命令的话就是”$ “后面的第一个字符段.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

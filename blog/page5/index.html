@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Adam&#39;s</title>
+  <meta name="description" content="Adam's blog">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/page5/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="home">
+
+  
+    <p class="date">
+      <span>Mar 6, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/03/about-highmem/">内核笔记-关于高端内存</a></h1>
+
+    <div class="content">
+      <p>内存寻址和管理一直都是理解kernel的重点和难点, 邮件列表中很多人(包括我)对于这部分的理解总是不那么透彻, 经常一个问题提出来, 几封邮件之后就乱了, 除非大牛过来救火, 一群人晕晕乎乎半天也搞不清楚.</p>
+
+<p>几个月前列表里有人问过高端内存的问题, 当时借着那个问题我又好好把这块儿看了一遍, 还记了点笔记, 今天拿出来再复习总结一遍.</p>
+
+<p>Linux把物理内存划分为了三个管理区, 分别为0-16MB的ZONE_DMA, 16-896MB的ZONE_NORMAL和高于896MB的ZONE_HIGHMEM也就是高端内存.</p>
+
+<p>至于为什么这么划分, ZONE_DMA好理解, 因为ISA总线只能对前16MB进行DMA寻址, 这块要分出来不能乱用. 而ZONE_NORMAL和ZONE_HIGHMEM为什么从896MB区分呢? 这还得从物理地址和虚拟地址说起.</p>
+
+<p>默认情况下, 内核空间是指3GB-4GB的虚拟地址, 用户空间则是0-3GB. 内核进程和用户进程分别活动在自己的空间内. 这里重点说内核空间, 3G-(3G+896MB)这块是直接映射, 减去PAGE_OFFSET(0xC000000)就是真实物理地址, 剩下那128MB(4G-3G-896MB)是用来做各种映射的, 包括整个高端内存的映射, 如果不留出这么一段做映射, 内核就只能管理1G的物理内存, 余下部分就只能浪费了.</p>
+
+<p>这里有个小难点. 有人会问, “如果剩下那些映射给用户空间, 内核不就可以不管了么, 高端内存也就不需要了吧?” 此言差矣, 点出来也就是一句话的事儿: 用户空间的内存使用也是内核分配的, 内核当然要有能力控制所有硬件资源.</p>
+
+<p>PS: 以上都是基于x86架构, x86_64没有高端内存, 有的MIPS32处理器的高端内存则默认从256MB开始.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Feb 17, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/02/vim-and-bom/">Vim和BOM</a></h1>
+
+    <div class="content">
+      <p>最近发现个怪现象, 从Vim中复制的文本(<a href="http://adam8157.info/blog/2010/05/vim-with-xsel/">xsel的方式</a>)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.</p>
+
+<p>查了下, 原来这几个字节是Unicode的BOM(<a href="http://en.wikipedia.org/wiki/Byte_order_mark">Byte order mark</a>), 用来标记UTF-16和UTF-32编码文件的字节序, UTF-8并不需要. 但因为这个文件我曾经用Windows的记事本保存过, 它自作聪明地加了个BOM, 而Vim识别到文件有BOM就会自动打开bomb这个选项(具体解释请看Vim中bomb和fileencodings的帮助), so…</p>
+
+<p>于是, 这样, 然后保存就好了:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:set nobomb
+</code></pre></div></div>
+
+<p>小提示, 查看当前bomb是否打开可以这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:set bomb?
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jan 24, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/01/use-vim-to-resolve-svn-conflicts/">用vim处理svn的conflicts</a></h1>
+
+    <div class="content">
+      <p>半年之前就用vimdiff取代了svn的diff(<a href="http://adam8157.info/blog/2010/05/svn-diff/">传送门</a>), 但是冲突处理没能用vim实现, 一直耿耿于怀, 这几天终于忍不住收拾了下.</p>
+
+<p>svn处理merge是用的diff3, 顺利合并就返回0, 合并错误就给出选项询问如何解决. 传统的外部工具处理方式也是从这里hook, 比如kdiff3, 先合并, 顺利合并就往下走, 合并错误就出一个用于merging的界面给你编辑, 手动处理后返回0退出.</p>
+
+<p>但是vim并没有实现diff3, 所以hook这里并不合适. 还好, 1.5版的svn引入了交互式的冲突解决方式, 其中有用外部工具处理冲突的”l”. 和你写diff3的wrapper脚本不同的是, 这个只有在diff3不能顺利处理合并的时候才会启动, 容易处理得多, 只需要写个很简单的脚本, 然后将svn配置里的merge-tool-cmd指向它就好.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+# Configure your favorite merge program here.
+MERGE="vim -d"
+
+if [ -z $2 ]
+then
+	echo ERROR: This script expects to be called by subversion
+	exit 1
+fi
+
+# Subversion provides the paths we need as the first, second, third
+# and fourth parameters.
+BASE=${1}
+THEIRS=${2}
+MINE=${3}
+MERGED=${4}
+
+# Call the merge command (change the following line to make sense for
+# your merge program).
+$MERGE $MERGED -c ":diffsplit $MINE" -c ":vertical diffsplit $THEIRS" \
+	-c ":vertical diffsplit $BASE"
+
+# Return an errorcode of 0 on successful merge, 1 if unresolved conflicts
+# remain in the result.  Any other errorcode will be treated as fatal.
+exit 0
+</code></pre></div></div>
+
+<p>Enjoy it.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jan 5, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/01/interesting-opcode-lea/">有意思的lea指令</a></h1>
+
+    <div class="content">
+      <p>最近恶补汇编时发现lea指令很有意思, 但大部分书都把它一笔带过, 同时网上的资料又很少, 所以记一下.</p>
+
+<p>lea, load effective address, 加载有效地址. 指令形式是从存储器读数据到寄存器, 效果是将存储器的有效地址写入到目的操作数, 简单说, 就是C语言中的”&amp;”.</p>
+
+<p>例如在32位环境下, 有内存位置标签foo, 则下面两行效果相同:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>movl $foo, %edi
+leal foo, %edi
+</code></pre></div></div>
+
+<p>同时, lea还有个很有用但同时又很难理解的用法, 例如这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>leal 5(%edx, %edx, 2), %eax
+</code></pre></div></div>
+
+<p>假设%edx的值为x, 上面这行会将%eax的值设置为”3x+5”.</p>
+
+<p>奇怪吧, 一个取址的指令怎么用来做简单算术操作了? 其实理解起来也不难, 5(%edx, %edx, 2)是存储器”3x+5”这个地址中的值, 这个值作为leal的源操作数会被取地址, 地址是什么? 自然就是”3x+5”!</p>
+
+<p>值得注意的是, 不管是AT&amp;T还是Intel语法, lea都是加载<strong>有效</strong>地址, 所以运算结果需得在地址空间能表示的大小范围内.</p>
+
+<p>PS: 可能有人会问为什么不把源操作数写成5(, %edx, 3), 这个嘛, 因为这种寻址模式的比例因子只能是1, 2, 4或者8.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Jan 1, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/01/year-of-2010/">2010年</a></h1>
+
+    <div class="content">
+      <p>2011年, 毫无惊喜得来了.</p>
+
+<p>过去的2010年, 快乐的记忆很多, 痛苦的片段也不少, 正如狄更斯老师说的, it was the best of times, it was the worst of times. 这一年, 我没法打上”后悔”或者”不后悔”的标签, 即使再给我一次机会, 我也不知道应该如何度过.</p>
+
+<p>往者不可谏, 来者犹可追. 希望新的一年里, 我能过得简简单单的, 也希望大家, 每个人, 都能幸幸福福, 快快乐乐的.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Dec 24, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/12/mass-rename-script/">批量重命名脚本</a></h1>
+
+    <div class="content">
+      <p>我一直在找这样一个批量重命名脚本: 原扩展名不变, 文件名从小到大, 以01, 02这种数字排序命名. 这么简单的功能却一直没找到相应的脚本, 只好自己写了一个, 可以预览, 没有覆盖危险, 并可以自动判断位数, 如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+NUM=1
+TOTAL_NUM=$[`ls -l |grep ^- |wc -l` - 1]
+LENGTH=`echo $TOTAL_NUM |awk '{print length($0)}'`
+
+if [ "$1" == "-f" ]
+then
+	TEMP_DIR=`mktemp -d .tmp.XXXXXXXXXX` || exit 1
+fi
+
+for orig in `ls -S -r`
+do
+	if [ ! -f "$orig" ]
+	then
+		continue
+	fi
+	EXT=${orig##*.}
+	echo ""`printf %0.${LENGTH}d $NUM`.$EXT"   &lt;--   "$orig""
+	if [ "$1" == "-f" ]
+	then
+		mv "$orig" "${TEMP_DIR}/`printf %0.${LENGTH}d $NUM`.$EXT"
+	fi
+	NUM=$[$NUM + 1]
+done
+
+if [ "$1" == "-f" ]
+then
+	mv ${TEMP_DIR}/* ./
+	rmdir $TEMP_DIR
+else
+	echo
+	echo "Use $(basename "$0") -f to make it effective"
+	echo
+fi
+
+exit 0
+</code></pre></div></div>
+
+<p>PS: Win下可以用Total Commander中的批量重命名功能, 全平台包括Linux的可以选Métamorphose 2, 暂时只发现这两个软件可以满足我的需求, 但是一个懒得Wine, 一个嫌功能太多而且体积有点大.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Dec 24, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/12/flash-ripper-script/">提取Flash视频的脚本</a></h1>
+
+    <div class="content">
+      <p>Adobe邪恶了…</p>
+
+<p>以前在Linux下提取Flash视频很容易, 只要去/tmp下找Flash开头的文件保存就好, 但是最近几个版本的Flash插件却找不到这些缓存文件了.</p>
+
+<p>研究了一下, 发现这些文件其实还是在/tmp下, 但是文件建立打开之后inode却被删掉了, 所以不可见, 确实有点邪恶吧? 但是既然文件是打开的状态, lsof就肯定能看到, /proc中就肯定有它的文件描述符, 剩下的事情比较容易, 脚本如下:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+DESTDIR="${HOME}/Videos/Flash"
+
+if [ ! -d "$DESTDIR" ]
+then
+	mkdir -p $DESTDIR || exit 1
+fi
+
+LINES=`lsof |grep '/tmp/Flash[^ ]*'`
+
+IFS=$'\n'
+
+for i in $LINES
+do
+	FILE=`echo $i |awk '{print "/proc/" $2 "/fd/" $4}' |sed 's/[rwu]$//'`
+	NAME=`echo $i |awk '{print $9}' |awk -F '/' '{print $3}'`
+
+	cp $FILE ${DESTDIR}/${NAME}.flv
+done
+
+exit 0
+</code></pre></div></div>
+
+<p>这里面的目标存放文件夹我指定的是~/Videos/Flash, 如果想放到别的地方, 改DESTDIR这个变量就好.</p>
+
+<p>另外, 这个脚本很简单, 但是写的过程中我也学到了一个小技巧, 就是IFS(Internal Field Separator)这个变量, 这个变量告诉了shell在处理字符串时如何判断一个词, 默认值是空格, Tab和换行, 我把它给设置成了只有换行, 因为我想在后面的for循环中每次处理一行而不是一个词.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 30, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/11/we-are-the-best/">We are the best</a></h1>
+
+    <div class="content">
+      <p>太棒了, 巴塞罗那 5: 0 皇家马德里.</p>
+
+<p>巴萨节奏太畅快了, 传球倒脚又快又准, 这是赢球的关键.</p>
+
+<p>皇马也并不如比分上看起来那么不堪, 估计有点发懵, 那么快的防守反攻没能坚持, 闪现了两下就没了踪影.</p>
+
+<p>总之, 巴萨赢得痛快!</p>
+
+<p><img src="http://adam8157.info/uploads/2010/11/messi_and_ronaldo.jpg" alt="" /></p>
+
+<p>PS: 虽然我是巴萨迷, 但是对皇马一直怀有敬意. 只是C罗, 人品也太差了吧, 场上丢人暂且不说, 这会儿, 估计又在埋怨队友没有给”世界第一”的他创造机会呢.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 17, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/11/abandon-qq-account/">弃用QQ</a></h1>
+
+    <div class="content">
+      <p>终于停用了QQ.</p>
+
+<p>原因嘛, 它让我的生活太闹腾了, 而且绑架用户, 监控通信等等行为对我来说也是无法接受的.</p>
+
+<p>需要解释的是, 我弃用QQ和近期所谓的3Q大战并没有关系, 只是时间上赶巧了, 这次”参战”的流氓软件和流氓网站我都没有用.</p>
+
+<p>总之, QQ不用了, 联系方式在<a href="http://adam8157.info/about/">这里</a>. 我平时比较忙, 也不太健谈, 所以请尽量不要直接发Gtalk邀请, 有事儿就给我发邮件 : )</p>
+
+<p>PS: QQ不提供注销功能, 但是可以像我一样把资料清空, 好友清空(拉黑再删可以从对方好友列表中消失), 密码和密码保护改成记不得的乱码, 这样过个几个月或者几年没登录, 号码也就被回收了, 世界也终究会归于清静.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
+      <span>Nov 14, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/11/use-vim-to-bulk-rename/">用Vim批量重命名</a></h1>
+
+    <div class="content">
+      <p>今天发现了一个好玩儿的东西, Vim的插件, <a href="http://www.vim.org/scripts/script.php?script_id=1721">renamer</a>.</p>
+
+<p>使用方法很简单, 只要在目标文件夹下打开Vim, :Renamer就可以了, 它会把当前文件夹下的所有文件名放到Vim的buffer中, 然后你想怎么改怎么改, 改完了用:Ren使其生效.</p>
+
+<p>我很喜欢这个插件, 同时推荐Vi控和键盘控试一下, 相信你不会后悔的.</p>
+
+<p>PS: 据说, Emacs中dired的Immediate Edit File Names是一样的东西.</p>
+
+    </div>
+
+    <br />
+  
+
+</div>
+
+
+<div style="text-align:center" class="pagination">
+  
+    <a href="/blog/page4/">&laquo; Prev</a>
+  
+
+  
+    
+      <a href="/">1</a>
+    
+  
+    
+      <a href="/blog/page2/">2</a>
+    
+  
+    
+      <a href="/blog/page3/">3</a>
+    
+  
+    
+      <a href="/blog/page4/">4</a>
+    
+  
+    
+      <em>5</em>
+    
+  
+    
+      <a href="/blog/page6/">6</a>
+    
+  
+    
+      <a href="/blog/page7/">7</a>
+    
+  
+    
+      <a href="/blog/page8/">8</a>
+    
+  
+    
+      <a href="/blog/page9/">9</a>
+    
+  
+
+  
+    <a href="/blog/page6/">Next &raquo;</a>
+  
+</div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

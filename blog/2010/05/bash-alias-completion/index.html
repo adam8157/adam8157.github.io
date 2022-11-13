@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Bash下实现alias补全</title>
+  <meta name="description" content="我是个懒人. 很多较长的命令, 比如apt的搜索, 安装, 卸载和清理都让我搞成了alias. 但简化输入的同时也带来个问题: 完整的命令配合bash_completion可以实现自动补全包名称, 现在用alias却得小心翼翼地输入. 这怎么行? 必须解决掉.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2010/05/bash-alias-completion/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Bash下实现alias补全</h1>
+    <p class="post-meta"><time datetime="2010-05-23T13:12:07+08:00" itemprop="datePublished">May 23, 2010</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>我是个懒人. 很多较长的命令, 比如apt的搜索, 安装, 卸载和清理都让我搞成了alias. 但简化输入的同时也带来个问题: 完整的命令配合bash_completion可以实现自动补全包名称, 现在用alias却得小心翼翼地输入. 这怎么行? 必须解决掉.</p>
+
+<p>之前的补全是配合bash_completion实现的, 所以很明显, alias补全也要从研究bash_completion入手. 分析/etc/bash_completion可以看出, bash_completion实现了很多用来获得补全项的函数, 然后用bash的内置命令complete将命令和函数对应起来以实现补全. 所以, 解决方案一目了然, 将函数提取出来和我自己定义的alias对应起来就好.</p>
+
+<p>以下是.bashrc中的配置</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#completion
+if [ -f /etc/bash]_completion ]; then
+	. /etc/bash_completion
+fi
+
+_show_installed()
+{
+	local cur
+	COMPREPLY=()
+	cur=`_get_cword`
+	COMPREPLY=( $( _comp_dpkg_installed_packages $cur ) )
+	return 0
+}
+
+_show_all()
+{
+	local cur
+	COMPREPLY=()
+	cur=`_get_cword`
+	COMPREPLY=( $( apt-cache pkgnames $cur 2&gt; /dev/null ) )
+	return 0
+}
+
+complete -F _show_all $default ai aw
+complete -F _show_installed $default ap
+
+#alias
+alias ai='sudo apt-get install'
+alias ap='sudo apt-get purge'
+alias aw='apt-cache show'
+</code></pre></div></div>
+
+<p>解释一下: _show_installed()用来获得已经安装的包名称, _show_all()用来获得源里所有的包名称. complete命令用以建立对应关系. 最后是我需要补全的alias. 很简单吧, 如果你有其它需要补全的alias, 函数都在/etc/bash_completion中, 提出来照着改就是了.</p>
+
+<p>PS: zsh的补全功能很强, 不用这么折腾, 有兴趣的朋友也可以试一下.</p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

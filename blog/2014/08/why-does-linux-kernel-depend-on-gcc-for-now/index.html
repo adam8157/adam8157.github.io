@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>为什么Linux内核(目前)依赖GCC</title>
+  <meta name="description" content="最近围绕着Linux内核编译环境发生了很多有趣的事情. 先是LLVMLinux的[1]大批特性进入mainline, 内核几乎可以用Clang编译了[2], 后来又是Linus Torvalds狂喷GCC 4.9.0[3], 很有意思. 而这些事情都有一个共同的背景: 目前Linux内核编译依赖GCC. 那么, ...">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://adam8157.info/blog/2014/08/why-does-linux-kernel-depend-on-gcc-for-now/">
+  <link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Adam's</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+          <a class="page-link" href="/blog/archives/">Archives</a>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+
+	<a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">为什么Linux内核(目前)依赖GCC</h1>
+    <p class="post-meta"><time datetime="2014-08-05T20:00:00+08:00" itemprop="datePublished">Aug 5, 2014</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>最近围绕着Linux内核编译环境发生了很多有趣的事情. 先是LLVMLinux的[1]大批特性进入mainline, 内核几乎可以用Clang编译了[2], 后来又是Linus Torvalds狂喷GCC 4.9.0[3], 很有意思. 而这些事情都有一个共同的背景: 目前Linux内核编译依赖GCC. 那么, 为什么?</p>
+
+<h2 id="不通用的命令参数">不通用的命令参数</h2>
+
+<p>Linux内核使用了很多GCC的命令参数来进行优化, 其它编译器也一直在试图兼容, 但目前尚未有能完美兼容GCC参数的其它编译器出现.</p>
+
+<h2 id="不支持的内联汇编">不支持的内联汇编</h2>
+
+<p>__asm__ 并不被其它编译器全面支持, 或者所支持的架构平台有限, 即使是如此简单的用法:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>asm("movl %ecx, %eax");
+</code></pre></div></div>
+
+<h2 id="特殊的c语言扩展">特殊的C语言扩展</h2>
+
+<p>GCC支持很多独有的特殊C扩展, 例如绑定变量与寄存器, 函数嵌套等, 此外大多数其它编译器也不支持结构体中的变长数组, 但是内核中存在, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void func(int i) {
+	struct foo_t {
+		char a[i];
+	} foo;
+}
+</code></pre></div></div>
+
+<h2 id="特殊的段标记">特殊的段标记</h2>
+
+<p>内核中使用了很多段标记例如__refdata, __initdata和__exitdata来优化链接器的行为, 这些特性大多也是GCC独有.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#define __refdata       __section(.ref.data)
+#define __initdata      __section(.init.data)
+#define __exitdata      __section(.exit.data)
+</code></pre></div></div>
+
+<h2 id="gcc的特殊行为或者bug">GCC的特殊行为或者bug</h2>
+
+<p>有时候GCC的某个行为是特殊的甚至是错误的, 但是却恰好迎合了某段代码的需要. 例如IA-64平台上GCC会自动重读一个指向volatile数据的指针的指向内容[4].</p>
+
+<h2 id="ref">ref:</h2>
+<p>1, <a href="http://llvm.linuxfoundation.org">http://llvm.linuxfoundation.org</a><br />
+2, <a href="http://www.phoronix.com/scan.php?page=news_item&amp;px=MTY2MjY">http://www.phoronix.com/scan.php?page=news_item&amp;px=MTY2MjY</a><br />
+3, <a href="http://www.phoronix.com/scan.php?page=news_item&amp;px=MTc1MDQ">http://www.phoronix.com/scan.php?page=news_item&amp;px=MTc1MDQ</a><br />
+4, <a href="https://software.intel.com/en-us/articles/intel-c-compiler-for-linux-kernel-building">https://software.intel.com/en-us/articles/intel-c-compiler-for-linux-kernel-building</a></p>
+
+  </div>
+
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+
+        s.src = '//adam8157.disqus.com/embed.js';
+
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
