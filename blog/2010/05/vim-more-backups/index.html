@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="经常备份绝对是个好习惯, 一个救过我很多次的好习惯." />
 <meta property="og:description" content="经常备份绝对是个好习惯, 一个救过我很多次的好习惯." />
-<link rel="canonical" href="http://adam8157.info/blog/2010/05/vim-more-backups/" />
-<meta property="og:url" content="http://adam8157.info/blog/2010/05/vim-more-backups/" />
+<link rel="canonical" href="https://adam8157.info/blog/2010/05/vim-more-backups/" />
+<meta property="og:url" content="https://adam8157.info/blog/2010/05/vim-more-backups/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2010-05-15T19:23:10+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="vim中单个文件多个备份的实现" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-05-15T19:23:10+08:00","datePublished":"2010-05-15T19:23:10+08:00","description":"经常备份绝对是个好习惯, 一个救过我很多次的好习惯.","headline":"vim中单个文件多个备份的实现","mainEntityOfPage":{"@type":"WebPage","@id":"http://adam8157.info/blog/2010/05/vim-more-backups/"},"url":"http://adam8157.info/blog/2010/05/vim-more-backups/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-05-15T19:23:10+08:00","datePublished":"2010-05-15T19:23:10+08:00","description":"经常备份绝对是个好习惯, 一个救过我很多次的好习惯.","headline":"vim中单个文件多个备份的实现","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2010/05/vim-more-backups/"},"url":"https://adam8157.info/blog/2010/05/vim-more-backups/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -77,32 +77,23 @@ set backupdir=$HOME/.vim/backup
 autocmd BufWritePre * let &amp;backupext = strftime(".%m-%d-%H-%M")
 </code></pre></div></div>
 
-  </div>
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    /*
+  </div><div id="disqus_thread"></div>
+  <script>
     var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      this.page.url = 'https://adam8157.info/blog/2010/05/vim-more-backups/';
+      this.page.identifier = 'https://adam8157.info/blog/2010/05/vim-more-backups/';
     };
-    */
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
 
-        s.src = '//adam8157.disqus.com/embed.js';
+    (function() {
+      var d = document, s = d.createElement('script');
 
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
     })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-  <a class="u-url" href="/blog/2010/05/vim-more-backups/" hidden></a>
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2010/05/vim-more-backups/" hidden></a>
 </article>
 
       </div>

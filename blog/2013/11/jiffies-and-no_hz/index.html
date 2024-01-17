@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等." />
 <meta property="og:description" content="Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等." />
-<link rel="canonical" href="http://adam8157.info/blog/2013/11/jiffies-and-no_hz/" />
-<meta property="og:url" content="http://adam8157.info/blog/2013/11/jiffies-and-no_hz/" />
+<link rel="canonical" href="https://adam8157.info/blog/2013/11/jiffies-and-no_hz/" />
+<meta property="og:url" content="https://adam8157.info/blog/2013/11/jiffies-and-no_hz/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2013-11-09T18:00:00+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="jiffies和NO_HZ" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2013-11-09T18:00:00+08:00","datePublished":"2013-11-09T18:00:00+08:00","description":"Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等.","headline":"jiffies和NO_HZ","mainEntityOfPage":{"@type":"WebPage","@id":"http://adam8157.info/blog/2013/11/jiffies-and-no_hz/"},"url":"http://adam8157.info/blog/2013/11/jiffies-and-no_hz/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2013-11-09T18:00:00+08:00","datePublished":"2013-11-09T18:00:00+08:00","description":"Linux内核中很多事件都是时间驱动的, 通俗讲就是动作的发生都要以时间为条件, 例如延迟, 定时以及周期执行等.","headline":"jiffies和NO_HZ","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2013/11/jiffies-and-no_hz/"},"url":"https://adam8157.info/blog/2013/11/jiffies-and-no_hz/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -91,32 +91,23 @@
 <p>1, <a href="https://lwn.net/Articles/549580/">https://lwn.net/Articles/549580/</a><br />
 2, <a href="https://www.kernel.org/doc/Documentation/timers">https://www.kernel.org/doc/Documentation/timers</a></p>
 
-  </div>
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    /*
+  </div><div id="disqus_thread"></div>
+  <script>
     var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      this.page.url = 'https://adam8157.info/blog/2013/11/jiffies-and-no_hz/';
+      this.page.identifier = 'https://adam8157.info/blog/2013/11/jiffies-and-no_hz/';
     };
-    */
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
 
-        s.src = '//adam8157.disqus.com/embed.js';
+    (function() {
+      var d = document, s = d.createElement('script');
 
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
     })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-  <a class="u-url" href="/blog/2013/11/jiffies-and-no_hz/" hidden></a>
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2013/11/jiffies-and-no_hz/" hidden></a>
 </article>
 
       </div>

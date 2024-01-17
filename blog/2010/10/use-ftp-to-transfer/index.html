@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="不知道大家都是怎么解决局域网内文件互传的, IPMsg(飞鸽传书)没有完美的Linux实现, Samba和NFS跨平台不好, Python的SimpleHTTPServer又不支持批量和文件夹. 所以在我看来, 最方便, 最快捷, 支持批量和文件夹, 跨平台最好的肯定是ftp." />
 <meta property="og:description" content="不知道大家都是怎么解决局域网内文件互传的, IPMsg(飞鸽传书)没有完美的Linux实现, Samba和NFS跨平台不好, Python的SimpleHTTPServer又不支持批量和文件夹. 所以在我看来, 最方便, 最快捷, 支持批量和文件夹, 跨平台最好的肯定是ftp." />
-<link rel="canonical" href="http://adam8157.info/blog/2010/10/use-ftp-to-transfer/" />
-<meta property="og:url" content="http://adam8157.info/blog/2010/10/use-ftp-to-transfer/" />
+<link rel="canonical" href="https://adam8157.info/blog/2010/10/use-ftp-to-transfer/" />
+<meta property="og:url" content="https://adam8157.info/blog/2010/10/use-ftp-to-transfer/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2010-10-20T22:47:46+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="用ftp互传文件" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-10-20T22:47:46+08:00","datePublished":"2010-10-20T22:47:46+08:00","description":"不知道大家都是怎么解决局域网内文件互传的, IPMsg(飞鸽传书)没有完美的Linux实现, Samba和NFS跨平台不好, Python的SimpleHTTPServer又不支持批量和文件夹. 所以在我看来, 最方便, 最快捷, 支持批量和文件夹, 跨平台最好的肯定是ftp.","headline":"用ftp互传文件","mainEntityOfPage":{"@type":"WebPage","@id":"http://adam8157.info/blog/2010/10/use-ftp-to-transfer/"},"url":"http://adam8157.info/blog/2010/10/use-ftp-to-transfer/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-10-20T22:47:46+08:00","datePublished":"2010-10-20T22:47:46+08:00","description":"不知道大家都是怎么解决局域网内文件互传的, IPMsg(飞鸽传书)没有完美的Linux实现, Samba和NFS跨平台不好, Python的SimpleHTTPServer又不支持批量和文件夹. 所以在我看来, 最方便, 最快捷, 支持批量和文件夹, 跨平台最好的肯定是ftp.","headline":"用ftp互传文件","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2010/10/use-ftp-to-transfer/"},"url":"https://adam8157.info/blog/2010/10/use-ftp-to-transfer/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -75,32 +75,23 @@ anon_other_write_enable=YES
 
 <p>注意, vsftpd要求anon_root这个目录不能是777的权限, 所以我在它下面又建立了一个777权限的upload目录, 在upload下匿名ftp用户拥有一切权限. 还有, anon_root和其下的upload所有者都是我, 但是别人传上来的文件所有者都是ftp, 操作很不方便, 所以我把anon_umask设置为了000.</p>
 
-  </div>
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    /*
+  </div><div id="disqus_thread"></div>
+  <script>
     var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      this.page.url = 'https://adam8157.info/blog/2010/10/use-ftp-to-transfer/';
+      this.page.identifier = 'https://adam8157.info/blog/2010/10/use-ftp-to-transfer/';
     };
-    */
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
 
-        s.src = '//adam8157.disqus.com/embed.js';
+    (function() {
+      var d = document, s = d.createElement('script');
 
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
     })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-  <a class="u-url" href="/blog/2010/10/use-ftp-to-transfer/" hidden></a>
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2010/10/use-ftp-to-transfer/" hidden></a>
 </article>
 
       </div>

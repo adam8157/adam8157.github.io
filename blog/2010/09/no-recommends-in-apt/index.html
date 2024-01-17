@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里." />
 <meta property="og:description" content="话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里." />
-<link rel="canonical" href="http://adam8157.info/blog/2010/09/no-recommends-in-apt/" />
-<meta property="og:url" content="http://adam8157.info/blog/2010/09/no-recommends-in-apt/" />
+<link rel="canonical" href="https://adam8157.info/blog/2010/09/no-recommends-in-apt/" />
+<meta property="og:url" content="https://adam8157.info/blog/2010/09/no-recommends-in-apt/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2010-09-23T17:23:22+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="无视Recommends" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-09-23T17:23:22+08:00","datePublished":"2010-09-23T17:23:22+08:00","description":"话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里.","headline":"无视Recommends","mainEntityOfPage":{"@type":"WebPage","@id":"http://adam8157.info/blog/2010/09/no-recommends-in-apt/"},"url":"http://adam8157.info/blog/2010/09/no-recommends-in-apt/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2010-09-23T17:23:22+08:00","datePublished":"2010-09-23T17:23:22+08:00","description":"话说apt的包依赖关系分了几个不同的权值, 严谨而清晰. 但我一直觉得其中的Recommends域比较混乱, 这个域应该定义的是”非必须或者不常用的功能性依赖”, 而大多数包维护者却都按照字面意思把”推荐”的包放到了这里.","headline":"无视Recommends","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2010/09/no-recommends-in-apt/"},"url":"https://adam8157.info/blog/2010/09/no-recommends-in-apt/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -91,32 +91,23 @@ EOF
 
 <p>PS: 1, autoremove不危险, 前提是你对apt的包管理体系很熟悉. 2, 我知道aptitude有Keep-Recommends的配置选项, 但是我个人不喜欢用aptitude.</p>
 
-  </div>
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    /*
+  </div><div id="disqus_thread"></div>
+  <script>
     var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      this.page.url = 'https://adam8157.info/blog/2010/09/no-recommends-in-apt/';
+      this.page.identifier = 'https://adam8157.info/blog/2010/09/no-recommends-in-apt/';
     };
-    */
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
 
-        s.src = '//adam8157.disqus.com/embed.js';
+    (function() {
+      var d = document, s = d.createElement('script');
 
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
     })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-  <a class="u-url" href="/blog/2010/09/no-recommends-in-apt/" hidden></a>
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2010/09/no-recommends-in-apt/" hidden></a>
 </article>
 
       </div>

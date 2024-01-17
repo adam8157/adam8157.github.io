@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中." />
 <meta property="og:description" content="dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中." />
-<link rel="canonical" href="http://adam8157.info/blog/2014/04/what-is-dentry/" />
-<meta property="og:url" content="http://adam8157.info/blog/2014/04/what-is-dentry/" />
+<link rel="canonical" href="https://adam8157.info/blog/2014/04/what-is-dentry/" />
+<meta property="og:url" content="https://adam8157.info/blog/2014/04/what-is-dentry/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2014-04-02T16:00:00+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="What is dentry" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2014-04-02T16:00:00+08:00","datePublished":"2014-04-02T16:00:00+08:00","description":"dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中.","headline":"What is dentry","mainEntityOfPage":{"@type":"WebPage","@id":"http://adam8157.info/blog/2014/04/what-is-dentry/"},"url":"http://adam8157.info/blog/2014/04/what-is-dentry/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2014-04-02T16:00:00+08:00","datePublished":"2014-04-02T16:00:00+08:00","description":"dentry, 既directory entry的缩写, 是Linux VFS中用来管理树状目录的结构, 在内存中生成, 并不存在于实际的文件系统中.","headline":"What is dentry","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2014/04/what-is-dentry/"},"url":"https://adam8157.info/blog/2014/04/what-is-dentry/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -102,32 +102,23 @@
 
 <p>区别于记录文件数据的inode, dentry只用来记录文件的组织和管理信息. 路径就是由多个dentry连接而成的, 例如/home/user/foo路径中的根目录/, 目录home, 目录user和文件foo各自都是一个dentry结构. 所有的dentry索引起来就形成了文件系统的树状结构.</p>
 
-  </div>
-<div id="disqus_thread"></div>
-<script>
-    /**
-     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-     */
-    /*
+  </div><div id="disqus_thread"></div>
+  <script>
     var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      this.page.url = 'https://adam8157.info/blog/2014/04/what-is-dentry/';
+      this.page.identifier = 'https://adam8157.info/blog/2014/04/what-is-dentry/';
     };
-    */
-    (function() {  // DON'T EDIT BELOW THIS LINE
-        var d = document, s = d.createElement('script');
 
-        s.src = '//adam8157.disqus.com/embed.js';
+    (function() {
+      var d = document, s = d.createElement('script');
 
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
     })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
-
-  <a class="u-url" href="/blog/2014/04/what-is-dentry/" hidden></a>
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2014/04/what-is-dentry/" hidden></a>
 </article>
 
       </div>
