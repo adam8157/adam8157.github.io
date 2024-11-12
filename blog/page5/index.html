@@ -52,6 +52,42 @@
 
   
     <p class="date">
+      <span>Apr 11, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/04/screen-dynamic-titles/">screen中动态设置标题</a></h1>
+
+    <div class="content">
+      <p>screen用起来很方便, 和xterm等虚拟终端配合起来更是花样多多. 例如, 我们可以根据screen的状态去动态地调整xterm的title. 这个功能我之前就实现过(<a href="http://adam8157.info/blog/2010/05/terminal-bash-screen/">传送门</a>), 但是那些sequences很难懂, 我自己今天再看过都糊涂了, 所以赶紧记下.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hardstatus off
+hardstatus string "screen(@%H): %t"
+termcapinfo xterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
+</code></pre></div></div>
+
+<p>上面是我screen中这部分的配置, 第一句是禁止在hardstatus line中打印警告, 第二句是设置hardstatus line的内容(详见screen手册中的STRING ESCAPES), 第三句最难懂了, 它的意思是把xterm的titlebar当作screen的hardstatus line.</p>
+
+<p>详细说第三句, hs表示终端有个hardstatus line, ts提供进入hardstatus line的 escape sequence, fs是离开时用的, ds是用于清除的. 它们各自的escape sequence是在xterm中定义的, 意义如下:</p>
+
+<blockquote>
+  <p>3.1 xterm escape sequences
+Window and icon titles may be changed in a running xterm by using XTerm escape sequences. The following sequences are useful in this respect:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ESC]0;stringBEL -- Set icon name and window title to string
+ESC]1;stringBEL -- Set icon name to string
+ESC]2;stringBEL -- Set window title to string
+</code></pre></div>  </div>
+</blockquote>
+
+<p>where ESC is the escape character (\033), and BEL is the bell character (\007).</p>
+
+<p>PS: 发现自己真是挺能折腾的…</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>Mar 6, 2011</span>
     </p>
 
@@ -337,25 +373,6 @@ exit 0
 <p>总之, QQ不用了, 联系方式在<a href="http://adam8157.info/about/">这里</a>. 我平时比较忙, 也不太健谈, 所以请尽量不要直接发Gtalk邀请, 有事儿就给我发邮件 : )</p>
 
 <p>PS: QQ不提供注销功能, 但是可以像我一样把资料清空, 好友清空(拉黑再删可以从对方好友列表中消失), 密码和密码保护改成记不得的乱码, 这样过个几个月或者几年没登录, 号码也就被回收了, 世界也终究会归于清静.</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>Nov 14, 2010</span>
-    </p>
-
-    <h1><a href="/blog/2010/11/use-vim-to-bulk-rename/">用Vim批量重命名</a></h1>
-
-    <div class="content">
-      <p>今天发现了一个好玩儿的东西, Vim的插件, <a href="http://www.vim.org/scripts/script.php?script_id=1721">renamer</a>.</p>
-
-<p>使用方法很简单, 只要在目标文件夹下打开Vim, :Renamer就可以了, 它会把当前文件夹下的所有文件名放到Vim的buffer中, 然后你想怎么改怎么改, 改完了用:Ren使其生效.</p>
-
-<p>我很喜欢这个插件, 同时推荐Vi控和键盘控试一下, 相信你不会后悔的.</p>
-
-<p>PS: 据说, Emacs中dired的Immediate Edit File Names是一样的东西.</p>
 
     </div>
 

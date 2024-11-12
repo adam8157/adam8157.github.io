@@ -52,6 +52,25 @@
 
   
     <p class="date">
+      <span>Nov 14, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/11/use-vim-to-bulk-rename/">用Vim批量重命名</a></h1>
+
+    <div class="content">
+      <p>今天发现了一个好玩儿的东西, Vim的插件, <a href="http://www.vim.org/scripts/script.php?script_id=1721">renamer</a>.</p>
+
+<p>使用方法很简单, 只要在目标文件夹下打开Vim, :Renamer就可以了, 它会把当前文件夹下的所有文件名放到Vim的buffer中, 然后你想怎么改怎么改, 改完了用:Ren使其生效.</p>
+
+<p>我很喜欢这个插件, 同时推荐Vi控和键盘控试一下, 相信你不会后悔的.</p>
+
+<p>PS: 据说, Emacs中dired的Immediate Edit File Names是一样的东西.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>Oct 30, 2010</span>
     </p>
 
@@ -314,30 +333,6 @@ font="Sans Serif,9,-1,5,50,0,0,0,0,0"
 <hr />
 
 <p>好了, 可以把qt4-qtconfig卸载了.</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>Aug 8, 2010</span>
-    </p>
-
-    <h1><a href="/blog/2010/08/use-bc-to-calculate/">好用的bc</a></h1>
-
-    <div class="content">
-      <p>最近搞的东西需要算很多偏移量之类的东西, 又多又烦. 还好, 在被Windows自带的计算器逼疯之前, 我改用了bc.</p>
-
-<p>bc实际上是一种无限精度的计算语言, 可以赋值, 可以循环, 可以判断, 可以打印, 可以编写脚本. 不过我没有玩得那么花, 只是用来计算一些简单的式子而已, 例如:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo '300+(525*5)-900+25^2' | bc
-echo 'scale=3;100/(125-68)' | bc
-echo 'obase=16;ibase=10;2*1024*1024+512*1024' | bc
-</code></pre></div></div>
-
-<p>都很简单, 只解释两点:<br />
-1, scale代表小数位数, 涉及到除法的时候最好加上, 否则会对齐输入数字中最长的小数位数.<br />
-2, obase代表输出进位制, ibase代表输入进位制, 默认都是十进制. 建议把obase写在前面, 否则二进制输入十进制输出”obase=10;ibase=2;”就得写成”ibase=2;obase=1010;”了, 呵呵.</p>
 
     </div>
 

@@ -52,6 +52,32 @@
 
   
     <p class="date">
+      <span>Oct 30, 2011</span>
+    </p>
+
+    <h1><a href="/blog/2011/10/remove-the-www-subdomain/">Remove the www subdomain</a></h1>
+
+    <div class="content">
+      <p>The www subdomain is redundant and meaningless.</p>
+
+<p>为了保持链接兼容, 我把使用www的链接301永久重定向到了主域名.</p>
+
+<p>域名A记录指向IP, 再创建一个CNAME把www指向A记录, 然后在.htaccess中添加如下规则即可.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+</code></pre></div></div>
+
+<p>PS: 各位交换了友情链接的朋友可以顺手改下, 虽然不改也没什么影响 :)</p>
+
+<p>ref: <a href="http://no-www.org/">http://no-www.org/</a></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>Oct 22, 2011</span>
     </p>
 
@@ -318,42 +344,6 @@ WHITE         37
 <p><strong>========UPDATE AGAIN========</strong></p>
 
 <p>写了个脚本(<a href="https://github.com/adam8157/scripts/blob/master/color-chart">传送门</a>), 可以打印出8色ANSI Color和256色XTERM Color, 方便颜色控们调试.</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>Apr 11, 2011</span>
-    </p>
-
-    <h1><a href="/blog/2011/04/screen-dynamic-titles/">screen中动态设置标题</a></h1>
-
-    <div class="content">
-      <p>screen用起来很方便, 和xterm等虚拟终端配合起来更是花样多多. 例如, 我们可以根据screen的状态去动态地调整xterm的title. 这个功能我之前就实现过(<a href="http://adam8157.info/blog/2010/05/terminal-bash-screen/">传送门</a>), 但是那些sequences很难懂, 我自己今天再看过都糊涂了, 所以赶紧记下.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hardstatus off
-hardstatus string "screen(@%H): %t"
-termcapinfo xterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
-</code></pre></div></div>
-
-<p>上面是我screen中这部分的配置, 第一句是禁止在hardstatus line中打印警告, 第二句是设置hardstatus line的内容(详见screen手册中的STRING ESCAPES), 第三句最难懂了, 它的意思是把xterm的titlebar当作screen的hardstatus line.</p>
-
-<p>详细说第三句, hs表示终端有个hardstatus line, ts提供进入hardstatus line的 escape sequence, fs是离开时用的, ds是用于清除的. 它们各自的escape sequence是在xterm中定义的, 意义如下:</p>
-
-<blockquote>
-  <p>3.1 xterm escape sequences
-Window and icon titles may be changed in a running xterm by using XTerm escape sequences. The following sequences are useful in this respect:</p>
-
-  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ESC]0;stringBEL -- Set icon name and window title to string
-ESC]1;stringBEL -- Set icon name to string
-ESC]2;stringBEL -- Set window title to string
-</code></pre></div>  </div>
-</blockquote>
-
-<p>where ESC is the escape character (\033), and BEL is the bell character (\007).</p>
-
-<p>PS: 发现自己真是挺能折腾的…</p>
 
     </div>
 

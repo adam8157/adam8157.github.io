@@ -52,6 +52,30 @@
 
   
     <p class="date">
+      <span>Aug 8, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/08/use-bc-to-calculate/">好用的bc</a></h1>
+
+    <div class="content">
+      <p>最近搞的东西需要算很多偏移量之类的东西, 又多又烦. 还好, 在被Windows自带的计算器逼疯之前, 我改用了bc.</p>
+
+<p>bc实际上是一种无限精度的计算语言, 可以赋值, 可以循环, 可以判断, 可以打印, 可以编写脚本. 不过我没有玩得那么花, 只是用来计算一些简单的式子而已, 例如:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo '300+(525*5)-900+25^2' | bc
+echo 'scale=3;100/(125-68)' | bc
+echo 'obase=16;ibase=10;2*1024*1024+512*1024' | bc
+</code></pre></div></div>
+
+<p>都很简单, 只解释两点:<br />
+1, scale代表小数位数, 涉及到除法的时候最好加上, 否则会对齐输入数字中最长的小数位数.<br />
+2, obase代表输出进位制, ibase代表输入进位制, 默认都是十进制. 建议把obase写在前面, 否则二进制输入十进制输出”obase=10;ibase=2;”就得写成”ibase=2;obase=1010;”了, 呵呵.</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>Jul 23, 2010</span>
     </p>
 
@@ -341,43 +365,6 @@ xset dpms 0 0 0
 <p>我用xlockmore锁屏幕的, 它有个-dpmsoff的参数, 后接秒数, 用来关屏幕电源. 这下方便多了, 现在的状态是: 平时没有屏保, 锁屏幕顺便关掉显示器电源.</p>
 
 <p>PS: 貌似这个参数有个小bug, 它要求加个秒数, 但是不理会具体的值, 算了, 能关就好.</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>May 26, 2010</span>
-    </p>
-
-    <h1><a href="/blog/2010/05/tar-path/">tar打包之路径</a></h1>
-
-    <div class="content">
-      <p>一直都在用一个小脚本备份一些重要的东西到优盘上, 但是生成的目录结构我很不满意.</p>
-
-<p>例如我要打包~/a, ~/b/c, ~/d/e三个目录, 以前我是:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ~
-tar czf foobar.tgz a b/c d/e
-</code></pre></div></div>
-
-<p>这样解压后仍然会出来a, b/c, d/e这样的目录结构, 而我理想情况是解压后出来a, c, e三个目录, 也就是说我只想保留一层目录结构. 想解决这个还是得从研究tar的参数入手, -C这个更改目录的选项虽然以前也知道, 但当时小看它了, 今天试了一下, 竟然可以这样:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tar czf foobar.tgz -C ~ a -C ~/b c -C ~/d e
-</code></pre></div></div>
-
-<p>连续变更三次当前目录, 这样tar包里的结构就是a, c, e了. 注意路径写全, 因为后一次-C默认的路径依赖于前一次-C.</p>
-
-<p>—————————胡乱感慨的分割线—————————</p>
-
-<ol>
-  <li>
-    <p>C和*nix果然是最符合Geek变态思维的玩具.</p>
-  </li>
-  <li>
-    <p>这个世界最伟大的秩序就是: 除了不让的, 剩下的都可以.</p>
-  </li>
-</ol>
 
     </div>
 

@@ -52,6 +52,21 @@
 
   
     <p class="date">
+      <span>May 26, 2012</span>
+    </p>
+
+    <h1><a href="/blog/2012/05/gracies-pep/">Gràcies, Pep</a></h1>
+
+    <div class="content">
+      <p>四年十四冠. 感谢你, 瓜迪奥拉, 感谢你带给我那么多的快乐.</p>
+
+<p><img src="http://adam8157.info/uploads/2012/05/gracies-pep.jpg" alt="" /></p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>May 1, 2012</span>
     </p>
 
@@ -395,32 +410,6 @@ sub  4096R/54321BAR  created: 2001-01-01  expires: never       usage: E
 Key fingerprint: BB13 C3CE A321 09A1 B93C  BF49 2365 E976 2F39 D84D</p>
 
 <p>ref: <a href="https://lkml.org/lkml/2011/9/30/421">https://lkml.org/lkml/2011/9/30/421</a></p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>Oct 30, 2011</span>
-    </p>
-
-    <h1><a href="/blog/2011/10/remove-the-www-subdomain/">Remove the www subdomain</a></h1>
-
-    <div class="content">
-      <p>The www subdomain is redundant and meaningless.</p>
-
-<p>为了保持链接兼容, 我把使用www的链接301永久重定向到了主域名.</p>
-
-<p>域名A记录指向IP, 再创建一个CNAME把www指向A记录, 然后在.htaccess中添加如下规则即可.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteEngine On
-RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
-</code></pre></div></div>
-
-<p>PS: 各位交换了友情链接的朋友可以顺手改下, 虽然不改也没什么影响 :)</p>
-
-<p>ref: <a href="http://no-www.org/">http://no-www.org/</a></p>
 
     </div>
 

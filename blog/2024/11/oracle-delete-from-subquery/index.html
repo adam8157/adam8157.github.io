@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Oracle的DELETE [FROM] (subquery)语法 | Adam’s</title>
+<meta name="generator" content="Jekyll v4.3.3" />
+<meta property="og:title" content="Oracle的DELETE [FROM] (subquery)语法" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="数据库中的删除操作通常是直接指定表名进行操作，但Oracle数据库支持一种特别的DELETE [FROM] (subquery)语法，使用户能够通过子查询指定删除操作，其它任何数据库均不支持，详细了解之后不由感叹Oracle的强大。" />
+<meta property="og:description" content="数据库中的删除操作通常是直接指定表名进行操作，但Oracle数据库支持一种特别的DELETE [FROM] (subquery)语法，使用户能够通过子查询指定删除操作，其它任何数据库均不支持，详细了解之后不由感叹Oracle的强大。" />
+<link rel="canonical" href="https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/" />
+<meta property="og:url" content="https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/" />
+<meta property="og:site_name" content="Adam’s" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-11-11T11:11:11+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Oracle的DELETE [FROM] (subquery)语法" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2024-11-11T11:11:11+08:00","datePublished":"2024-11-11T11:11:11+08:00","description":"数据库中的删除操作通常是直接指定表名进行操作，但Oracle数据库支持一种特别的DELETE [FROM] (subquery)语法，使用户能够通过子查询指定删除操作，其它任何数据库均不支持，详细了解之后不由感叹Oracle的强大。","headline":"Oracle的DELETE [FROM] (subquery)语法","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/"},"url":"https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+</head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Adam&#39;s</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/blog/archives/">Archives</a><a class="page-link" href="https://feeds.feedburner.com/adam8157">RSS</a>
+        </div>
+      </nav></div>
+</header>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-927EWG9EGB');
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Oracle的DELETE [FROM] (subquery)语法</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2024-11-11T11:11:11+08:00" itemprop="datePublished">Nov 11, 2024
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>数据库中的删除操作通常是直接指定表名进行操作，但Oracle数据库支持一种特别的<code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code>语法，使用户能够通过子查询指定删除操作，其它任何数据库均不支持，详细了解之后不由感叹Oracle的强大。</p>
+
+<h2 id="1支持情况">1，支持情况</h2>
+
+<p>Oracle对 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 语法的支持包括以下几种情形：</p>
+
+<ol>
+  <li><strong>单表子查询</strong>：单表子查询的返回结果可以直接用于DELETE操作。</li>
+  <li><strong>多表JOIN子查询</strong>：支持基于包含多表JOIN的子查询进行DELETE。</li>
+  <li><strong>可修改视图</strong>：可修改视图也相当于一种子查询，同样支持。</li>
+</ol>
+
+<p>但无论是哪种情况，子查询或可修改视图中必须存在一个“键值保存表”（Key-Preserved Table），键值保存表也是实现该语法的关键。</p>
+
+<h3 id="什么是键值保存表">什么是键值保存表</h3>
+
+<p>在一个多表JOIN的查询中，如果某个表的主键或唯一键被投影，且在JOIN结果中依旧保持唯一性，也就是说，JOIN操作不会破坏该键的唯一性，这个表在<strong>这个查询</strong>中便被称为键值保存表。</p>
+
+<h2 id="2oracle行为分析">2，Oracle行为分析</h2>
+
+<p>Oracle在执行 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 时会根据子查询的结构确定删除目标，这其中存在一些有趣的现象。</p>
+
+<h3 id="单表子查询行为">单表子查询行为</h3>
+
+<p>如果子查询中仅包含一个表，Oracle允许删除操作，即使该表没有唯一键。例如：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">);</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">A</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="多表join子查询的复杂行为">多表JOIN子查询的复杂行为</h3>
+
+<p>当 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 包含多表JOIN时，行为变得复杂。例如：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">);</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">B</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">price</span> <span class="nb">int</span><span class="p">);</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">B</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在该例中，如果 <code class="language-plaintext highlighter-rouge">A.id</code>是主键，而 <code class="language-plaintext highlighter-rouge">B</code> 表没有，则 <code class="language-plaintext highlighter-rouge">DELETE</code> 语句会删除 <code class="language-plaintext highlighter-rouge">B</code> 表中的数据。如果 <code class="language-plaintext highlighter-rouge">B.id</code>是主键，而 <code class="language-plaintext highlighter-rouge">A</code> 表没有，则 <code class="language-plaintext highlighter-rouge">DELETE</code> 语句会删除 <code class="language-plaintext highlighter-rouge">A</code> 表中的数据。若 <code class="language-plaintext highlighter-rouge">A.id</code> 和 <code class="language-plaintext highlighter-rouge">B.id</code> 都是主键，Oracle会选择语句中顺序居前的键值保存表进行删除。</p>
+
+<p>这里非常反直觉，不是说会删除“键值保存表”上的数据吗？为什么反而是另外一个没有主键的表数据会被删除？其实也合理：因为在JOIN的结果中，唯一键的值可能出现多次，所以那个表并不是“键值保存表”，而匹配到的多个相同值却保留了一个隐藏的唯一键，即Oracle表的<code class="language-plaintext highlighter-rouge">ROWID</code>，其所在的表可以视为键值保存表。</p>
+
+<p>比如在如下例子中，A表有主键，且主键在JOIN之后保留，则A为键值保存表，数据就是从A中删除：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">B</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">price</span> <span class="nb">int</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="k">FROM</span> <span class="n">A</span> <span class="k">WHERE</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">1</span> <span class="k">FROM</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">B</span><span class="p">.</span><span class="n">id</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h2 id="3oracle的可能实现原理">3，Oracle的可能实现原理</h2>
+
+<p>Oracle对 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 的实现依赖于键值保存表来避免歧义，其可能的执行步骤如下：</p>
+
+<ol>
+  <li>首先语法分析确定子查询或视图中是否存在键值保存表。如果有多个键值保存表，则选择第一个；没有时，引入 <code class="language-plaintext highlighter-rouge">ROWID</code> 作为唯一键，此时只能存在一个键值保存表（无唯一键的复杂单表子查询可能也是如此）。</li>
+  <li>执行子查询，并从选中的键值保存表中删除子查询选中的行。</li>
+</ol>
+
+<h2 id="一点感慨">一点感慨</h2>
+
+<p>说起来有点复杂，做起来其实也并不简单，多表中对“键值保存表”的判断其实是非常复杂的逻辑，一些视图比如<code class="language-plaintext highlighter-rouge">USER_UPDATABLE_COLUMNS</code>也与此相关，只能感慨Oracle还是太全面了。</p>
+
+  </div><div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function () {
+      this.page.url = 'https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/';
+      this.page.identifier = 'https://adam8157.info/blog/2024/11/oracle-delete-from-subquery/';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+
+      s.src = 'https://adam8157.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/blog/2024/11/oracle-delete-from-subquery/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+
+  <div style="text-align:center" class="license">
+    Copyright © 2010-2024 Adam Lee, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>
+  </div>
+
+</footer>
+</body>
+
+</html>

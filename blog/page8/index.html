@@ -52,6 +52,43 @@
 
   
     <p class="date">
+      <span>May 26, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/tar-path/">tar打包之路径</a></h1>
+
+    <div class="content">
+      <p>一直都在用一个小脚本备份一些重要的东西到优盘上, 但是生成的目录结构我很不满意.</p>
+
+<p>例如我要打包~/a, ~/b/c, ~/d/e三个目录, 以前我是:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ~
+tar czf foobar.tgz a b/c d/e
+</code></pre></div></div>
+
+<p>这样解压后仍然会出来a, b/c, d/e这样的目录结构, 而我理想情况是解压后出来a, c, e三个目录, 也就是说我只想保留一层目录结构. 想解决这个还是得从研究tar的参数入手, -C这个更改目录的选项虽然以前也知道, 但当时小看它了, 今天试了一下, 竟然可以这样:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tar czf foobar.tgz -C ~ a -C ~/b c -C ~/d e
+</code></pre></div></div>
+
+<p>连续变更三次当前目录, 这样tar包里的结构就是a, c, e了. 注意路径写全, 因为后一次-C默认的路径依赖于前一次-C.</p>
+
+<p>—————————胡乱感慨的分割线—————————</p>
+
+<ol>
+  <li>
+    <p>C和*nix果然是最符合Geek变态思维的玩具.</p>
+  </li>
+  <li>
+    <p>这个世界最伟大的秩序就是: 除了不让的, 剩下的都可以.</p>
+  </li>
+</ol>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>May 23, 2010</span>
     </p>
 
@@ -404,46 +441,6 @@ menuentry "FreeDOS" {
 <p>这中间还涉及到一些MediaDirect键的技术细节, 有校验, 存储的也不是普通的MBR, 而且Dell的工程师工具可以改. 但是过了很长时间了, 已经记不大清了, 不敢胡说, 有兴趣的朋友可以给我发邮件.</p>
 
 <p>好了, 该睡了. 晚安.</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>May 5, 2010</span>
-    </p>
-
-    <h1><a href="/blog/2010/05/mutt-filter-notify/">利用mutt的filter实现新邮件提醒</a></h1>
-
-    <div class="content">
-      <p>“All mail clients suck. This one just sucks less.”</p>
-
-<p>mutt实在是强大, 千奇百怪的功能, 只有你想不到的, 没有不能实现的.</p>
-
-<p>mutt擅长和其它软件配合, 比如抓取邮件部分有人用fetchmail, 有人用getmail, 有人用内置pop3, 也有人像我一样用内置imap. 但都会遇到一个问题, 新邮件提醒, 这个问题上更是各显神通, inotify监视本地mailbox的, 安装各种notify软件的, 嵌在conky里的, 脚本抓取atom订阅配合cron的.</p>
-
-<p>第一种也可以, 就是有点麻烦, 有点小题大做. 而后面的几种解决方法我觉得都不太好, 因为如果是gmail, 就隔几分钟就登录gmail; 如果不是gmail, 基本上都不太容易实现. 我理想的新邮件通知是这样的: 只依靠mutt来检测, 能够改掉screen里mutt的title, 能跳出notify提示你有新邮件, 能配合声音, 能…</p>
-
-<p>解决问题的过程无非就是RTFM, 很好, mutt提供了一个filter的功能, <a href="http://www.mutt.org/doc/devel/manual.html#formatstrings-filters">http://www.mutt.org/doc/devel/manual.html#formatstrings-filters</a>, 简单说就是将status通过管道pipe到一个脚本, 这下好了, 你的status里设置上新邮件相关字符串, 脚本里一检测, 其它的问题就全都解决了.</p>
-
-<p>下面是我mutt中status_format的设置, manual中说了, 最后加上(“|”), 就将status字符串传递给第一个词, 也就是我指定的mutt-filter脚本. 顺便说一句, mutt没那么蠢, 当然是只有这个字符串变化了才会触发pipe的动作.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set status_format="mutt-filter '-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]----%&gt;-(%P)---'|"
-</code></pre></div></div>
-
-<p>下面是我的mutt-filter脚本, 我只改了screen的window title, 发了个notify, 想要声音的自己加上就是. 最后那行的echo “$1”是将字符串还给status, 要不只是pipe到脚本, status空了的.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
-
-if [[ "$1" =~ "All Mail" &amp;&amp; "$1" =~ "New:" ]];then
-	notify-send "Get new mails"
-	printf "\ekmutt: new\e\\" &gt; /dev/tty
-else
-	printf "\ekmutt\e\\" &gt; /dev/tty
-fi
-
-echo "$1"
-</code></pre></div></div>
 
     </div>
 

@@ -51,6 +51,93 @@
 
   
     <p class="date">
+      <span>Nov 11, 2024</span>
+    </p>
+
+    <h1><a href="/blog/2024/11/oracle-delete-from-subquery/">Oracle的DELETE [FROM] (subquery)语法</a></h1>
+
+    <div class="content">
+      <p>数据库中的删除操作通常是直接指定表名进行操作，但Oracle数据库支持一种特别的<code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code>语法，使用户能够通过子查询指定删除操作，其它任何数据库均不支持，详细了解之后不由感叹Oracle的强大。</p>
+
+<h2 id="1支持情况">1，支持情况</h2>
+
+<p>Oracle对 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 语法的支持包括以下几种情形：</p>
+
+<ol>
+  <li><strong>单表子查询</strong>：单表子查询的返回结果可以直接用于DELETE操作。</li>
+  <li><strong>多表JOIN子查询</strong>：支持基于包含多表JOIN的子查询进行DELETE。</li>
+  <li><strong>可修改视图</strong>：可修改视图也相当于一种子查询，同样支持。</li>
+</ol>
+
+<p>但无论是哪种情况，子查询或可修改视图中必须存在一个“键值保存表”（Key-Preserved Table），键值保存表也是实现该语法的关键。</p>
+
+<h3 id="什么是键值保存表">什么是键值保存表</h3>
+
+<p>在一个多表JOIN的查询中，如果某个表的主键或唯一键被投影，且在JOIN结果中依旧保持唯一性，也就是说，JOIN操作不会破坏该键的唯一性，这个表在<strong>这个查询</strong>中便被称为键值保存表。</p>
+
+<h2 id="2oracle行为分析">2，Oracle行为分析</h2>
+
+<p>Oracle在执行 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 时会根据子查询的结构确定删除目标，这其中存在一些有趣的现象。</p>
+
+<h3 id="单表子查询行为">单表子查询行为</h3>
+
+<p>如果子查询中仅包含一个表，Oracle允许删除操作，即使该表没有唯一键。例如：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">);</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">A</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="多表join子查询的复杂行为">多表JOIN子查询的复杂行为</h3>
+
+<p>当 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 包含多表JOIN时，行为变得复杂。例如：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">);</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">B</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">price</span> <span class="nb">int</span><span class="p">);</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">B</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在该例中，如果 <code class="language-plaintext highlighter-rouge">A.id</code>是主键，而 <code class="language-plaintext highlighter-rouge">B</code> 表没有，则 <code class="language-plaintext highlighter-rouge">DELETE</code> 语句会删除 <code class="language-plaintext highlighter-rouge">B</code> 表中的数据。如果 <code class="language-plaintext highlighter-rouge">B.id</code>是主键，而 <code class="language-plaintext highlighter-rouge">A</code> 表没有，则 <code class="language-plaintext highlighter-rouge">DELETE</code> 语句会删除 <code class="language-plaintext highlighter-rouge">A</code> 表中的数据。若 <code class="language-plaintext highlighter-rouge">A.id</code> 和 <code class="language-plaintext highlighter-rouge">B.id</code> 都是主键，Oracle会选择语句中顺序居前的键值保存表进行删除。</p>
+
+<p>这里非常反直觉，不是说会删除“键值保存表”上的数据吗？为什么反而是另外一个没有主键的表数据会被删除？其实也合理：因为在JOIN的结果中，唯一键的值可能出现多次，所以那个表并不是“键值保存表”，而匹配到的多个相同值却保留了一个隐藏的唯一键，即Oracle表的<code class="language-plaintext highlighter-rouge">ROWID</code>，其所在的表可以视为键值保存表。</p>
+
+<p>比如在如下例子中，A表有主键，且主键在JOIN之后保留，则A为键值保存表，数据就是从A中删除：</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">A</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">A</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">B</span> <span class="p">(</span><span class="n">id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">price</span> <span class="nb">int</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">B</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">DELETE</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="k">FROM</span> <span class="n">A</span> <span class="k">WHERE</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">1</span> <span class="k">FROM</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">A</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">B</span><span class="p">.</span><span class="n">id</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h2 id="3oracle的可能实现原理">3，Oracle的可能实现原理</h2>
+
+<p>Oracle对 <code class="language-plaintext highlighter-rouge">DELETE [FROM] (subquery)</code> 的实现依赖于键值保存表来避免歧义，其可能的执行步骤如下：</p>
+
+<ol>
+  <li>首先语法分析确定子查询或视图中是否存在键值保存表。如果有多个键值保存表，则选择第一个；没有时，引入 <code class="language-plaintext highlighter-rouge">ROWID</code> 作为唯一键，此时只能存在一个键值保存表（无唯一键的复杂单表子查询可能也是如此）。</li>
+  <li>执行子查询，并从选中的键值保存表中删除子查询选中的行。</li>
+</ol>
+
+<h2 id="一点感慨">一点感慨</h2>
+
+<p>说起来有点复杂，做起来其实也并不简单，多表中对“键值保存表”的判断其实是非常复杂的逻辑，一些视图比如<code class="language-plaintext highlighter-rouge">USER_UPDATABLE_COLUMNS</code>也与此相关，只能感慨Oracle还是太全面了。</p>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>Nov 22, 2019</span>
     </p>
 
@@ -637,68 +724,6 @@ menuentry "Debian GNU/Linux Rescue Mode" {
 </code></pre></div></div>
 
 <p>Done, enjoy fixing others’ computers then, which I already quit :D</p>
-
-    </div>
-
-    <br />
-  
-    <p class="date">
-      <span>Nov 23, 2014</span>
-    </p>
-
-    <h1><a href="/blog/2014/11/use-gnu-global-for-source-code-tagging/">使用GNU GLOBAL索引代码</a></h1>
-
-    <div class="content">
-      <h2 id="什么是global">什么是GLOBAL</h2>
-
-<p><a href="https://www.gnu.org/software/global/">GLOBAL</a>是GNU出品的一款代码索引工具.</p>
-
-<h2 id="global有什么优点">GLOBAL有什么优点</h2>
-
-<ul>
-  <li>
-    <p>原生支持C, C++, 汇编等6种语言的代码索引, 借助插件支持的更多达25种</p>
-  </li>
-  <li>
-    <p>支持多种查找功能, 例如最常用的查找定义, 调用和文件位置等</p>
-  </li>
-  <li>
-    <p>提供gtags-cscope命令, 兼容cscope</p>
-  </li>
-  <li>
-    <p>相对于cscope, 查找匹配更加快速和准确</p>
-  </li>
-  <li>
-    <p>支持增量更新, 而且比cscope的增量更新快很多很多</p>
-  </li>
-  <li>
-    <p>开发活跃, 上一次发布新版本是两个月前, 而cscope的上一次是两年前</p>
-  </li>
-</ul>
-
-<h2 id="如何使用global">如何使用GLOBAL</h2>
-
-<p>简单讲, 在代码目录中执行<code class="language-plaintext highlighter-rouge">gtags -i</code>建立索引数据库, 然后使用global命令查找匹配. 例如<code class="language-plaintext highlighter-rouge">global symbol</code>查看symbol的定义, <code class="language-plaintext highlighter-rouge">global -r symbol</code>查看symbol在哪被引用, 等等. 详见: <a href="https://www.gnu.org/software/global/globaldoc_toc.html">https://www.gnu.org/software/global/globaldoc_toc.html</a></p>
-
-<h2 id="vim中使用global的小技巧">Vim中使用GLOBAL的小技巧</h2>
-
-<p>继承Vim中cscope的接口和键绑定:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:set cscopeprg=gtags-cscope
-</code></pre></div></div>
-
-<p>自动从当前文件夹递归向上搜索索引数据库并加载:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>function! LoadDatabase()
-	let db = findfile("GTAGS", ".;")
-	if (!empty(db))
-		set nocscopeverbose
-		exe "cs add " . db
-		set cscopeverbose
-	endif
-endfunction
-autocmd BufEnter *.[ch] call LoadDatabase()
-</code></pre></div></div>
 
     </div>
 

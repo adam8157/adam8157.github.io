@@ -51,6 +51,46 @@
 
   
     <p class="date">
+      <span>May 5, 2010</span>
+    </p>
+
+    <h1><a href="/blog/2010/05/mutt-filter-notify/">利用mutt的filter实现新邮件提醒</a></h1>
+
+    <div class="content">
+      <p>“All mail clients suck. This one just sucks less.”</p>
+
+<p>mutt实在是强大, 千奇百怪的功能, 只有你想不到的, 没有不能实现的.</p>
+
+<p>mutt擅长和其它软件配合, 比如抓取邮件部分有人用fetchmail, 有人用getmail, 有人用内置pop3, 也有人像我一样用内置imap. 但都会遇到一个问题, 新邮件提醒, 这个问题上更是各显神通, inotify监视本地mailbox的, 安装各种notify软件的, 嵌在conky里的, 脚本抓取atom订阅配合cron的.</p>
+
+<p>第一种也可以, 就是有点麻烦, 有点小题大做. 而后面的几种解决方法我觉得都不太好, 因为如果是gmail, 就隔几分钟就登录gmail; 如果不是gmail, 基本上都不太容易实现. 我理想的新邮件通知是这样的: 只依靠mutt来检测, 能够改掉screen里mutt的title, 能跳出notify提示你有新邮件, 能配合声音, 能…</p>
+
+<p>解决问题的过程无非就是RTFM, 很好, mutt提供了一个filter的功能, <a href="http://www.mutt.org/doc/devel/manual.html#formatstrings-filters">http://www.mutt.org/doc/devel/manual.html#formatstrings-filters</a>, 简单说就是将status通过管道pipe到一个脚本, 这下好了, 你的status里设置上新邮件相关字符串, 脚本里一检测, 其它的问题就全都解决了.</p>
+
+<p>下面是我mutt中status_format的设置, manual中说了, 最后加上(“|”), 就将status字符串传递给第一个词, 也就是我指定的mutt-filter脚本. 顺便说一句, mutt没那么蠢, 当然是只有这个字符串变化了才会触发pipe的动作.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set status_format="mutt-filter '-%r-Mutt: %f [Msgs:%?M?%M/?%m%?n? New:%n?%?o? Old:%o?%?d? Del:%d?%?F? Flag:%F?%?t? Tag:%t?%?p? Post:%p?%?b? Inc:%b?%?l? %l?]----%&gt;-(%P)---'|"
+</code></pre></div></div>
+
+<p>下面是我的mutt-filter脚本, 我只改了screen的window title, 发了个notify, 想要声音的自己加上就是. 最后那行的echo “$1”是将字符串还给status, 要不只是pipe到脚本, status空了的.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#!/bin/sh
+
+if [[ "$1" =~ "All Mail" &amp;&amp; "$1" =~ "New:" ]];then
+	notify-send "Get new mails"
+	printf "\ekmutt: new\e\\" &gt; /dev/tty
+else
+	printf "\ekmutt\e\\" &gt; /dev/tty
+fi
+
+echo "$1"
+</code></pre></div></div>
+
+    </div>
+
+    <br />
+  
+    <p class="date">
       <span>May 3, 2010</span>
     </p>
 
