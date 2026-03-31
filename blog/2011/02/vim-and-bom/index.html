@@ -9,17 +9,17 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="最近发现个怪现象, 从Vim中复制的文本(xsel的方式)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误." />
 <meta property="og:description" content="最近发现个怪现象, 从Vim中复制的文本(xsel的方式)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误." />
-<link rel="canonical" href="https://adam8157.info/blog/2011/02/vim-and-bom/" />
-<meta property="og:url" content="https://adam8157.info/blog/2011/02/vim-and-bom/" />
+<link rel="canonical" href="https://adam8157.github.io/blog/2011/02/vim-and-bom/" />
+<meta property="og:url" content="https://adam8157.github.io/blog/2011/02/vim-and-bom/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2011-02-17T16:32:01+08:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Vim和BOM" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2011-02-17T16:32:01+08:00","datePublished":"2011-02-17T16:32:01+08:00","description":"最近发现个怪现象, 从Vim中复制的文本(xsel的方式)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.","headline":"Vim和BOM","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.info/blog/2011/02/vim-and-bom/"},"url":"https://adam8157.info/blog/2011/02/vim-and-bom/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2011-02-17T16:32:01+08:00","datePublished":"2011-02-17T16:32:01+08:00","description":"最近发现个怪现象, 从Vim中复制的文本(xsel的方式)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.","headline":"Vim和BOM","mainEntityOfPage":{"@type":"WebPage","@id":"https://adam8157.github.io/blog/2011/02/vim-and-bom/"},"url":"https://adam8157.github.io/blog/2011/02/vim-and-bom/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.github.io/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -38,15 +38,6 @@
       </nav></div>
 </header>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-927EWG9EGB');
-</script>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
@@ -59,7 +50,7 @@
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <p>最近发现个怪现象, 从Vim中复制的文本(<a href="http://adam8157.info/blog/2010/05/vim-with-xsel/">xsel的方式</a>)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.</p>
+    <p>最近发现个怪现象, 从Vim中复制的文本(<a href="https://adam8157.github.io/blog/2010/05/vim-with-xsel/">xsel的方式</a>)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.</p>
 
 <p>查了下, 原来这几个字节是Unicode的BOM(<a href="http://en.wikipedia.org/wiki/Byte_order_mark">Byte order mark</a>), 用来标记UTF-16和UTF-32编码文件的字节序, UTF-8并不需要. 但因为这个文件我曾经用Windows的记事本保存过, 它自作聪明地加了个BOM, 而Vim识别到文件有BOM就会自动打开bomb这个选项(具体解释请看Vim中bomb和fileencodings的帮助), so…</p>
 
@@ -76,8 +67,8 @@
   </div><div id="disqus_thread"></div>
   <script>
     var disqus_config = function () {
-      this.page.url = 'https://adam8157.info/blog/2011/02/vim-and-bom/';
-      this.page.identifier = 'https://adam8157.info/blog/2011/02/vim-and-bom/';
+      this.page.url = 'https://adam8157.github.io/blog/2011/02/vim-and-bom/';
+      this.page.identifier = 'https://adam8157.github.io/blog/2011/02/vim-and-bom/';
     };
 
     (function() {

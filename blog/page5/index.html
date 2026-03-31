@@ -7,18 +7,18 @@
 <meta name="generator" content="Jekyll v4.3.3" />
 <meta property="og:title" content="Adam’s" />
 <meta property="og:locale" content="en_US" />
-<link rel="canonical" href="https://adam8157.info/blog/page5/" />
-<meta property="og:url" content="https://adam8157.info/blog/page5/" />
+<link rel="canonical" href="https://adam8157.github.io/blog/page5/" />
+<meta property="og:url" content="https://adam8157.github.io/blog/page5/" />
 <meta property="og:site_name" content="Adam’s" />
 <meta property="og:type" content="website" />
-<link rel="prev" href="https://adam8157.info/blog/page4/" />
-<link rel="next" href="https://adam8157.info/blog/page6/" />
+<link rel="prev" href="https://adam8157.github.io/blog/page4/" />
+<link rel="next" href="https://adam8157.github.io/blog/page6/" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Adam’s" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","headline":"Adam’s","url":"https://adam8157.info/blog/page5/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","headline":"Adam’s","url":"https://adam8157.github.io/blog/page5/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.info/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://adam8157.github.io/feed.xml" title="Adam&apos;s" /><link rel="alternate" type="application/rss+xml" title="Adam's" href="https://feeds.feedburner.com/adam8157">
 </head>
 <body><header class="site-header" role="banner">
 
@@ -37,15 +37,6 @@
       </nav></div>
 </header>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-927EWG9EGB"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-927EWG9EGB');
-</script>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <div class="home">
@@ -58,7 +49,7 @@
     <h1><a href="/blog/2011/04/screen-dynamic-titles/">screen中动态设置标题</a></h1>
 
     <div class="content">
-      <p>screen用起来很方便, 和xterm等虚拟终端配合起来更是花样多多. 例如, 我们可以根据screen的状态去动态地调整xterm的title. 这个功能我之前就实现过(<a href="http://adam8157.info/blog/2010/05/terminal-bash-screen/">传送门</a>), 但是那些sequences很难懂, 我自己今天再看过都糊涂了, 所以赶紧记下.</p>
+      <p>screen用起来很方便, 和xterm等虚拟终端配合起来更是花样多多. 例如, 我们可以根据screen的状态去动态地调整xterm的title. 这个功能我之前就实现过(<a href="https://adam8157.github.io/blog/2010/05/terminal-bash-screen/">传送门</a>), 但是那些sequences很难懂, 我自己今天再看过都糊涂了, 所以赶紧记下.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hardstatus off
 hardstatus string "screen(@%H): %t"
@@ -119,7 +110,7 @@ ESC]2;stringBEL -- Set window title to string
     <h1><a href="/blog/2011/02/vim-and-bom/">Vim和BOM</a></h1>
 
     <div class="content">
-      <p>最近发现个怪现象, 从Vim中复制的文本(<a href="http://adam8157.info/blog/2010/05/vim-with-xsel/">xsel的方式</a>)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.</p>
+      <p>最近发现个怪现象, 从Vim中复制的文本(<a href="https://adam8157.github.io/blog/2010/05/vim-with-xsel/">xsel的方式</a>)和实际文本有点点区别, 会在头部加几个不可见的字节(0xEF 0xBB 0xBF), 粘贴到别的程序里有时会引发错误.</p>
 
 <p>查了下, 原来这几个字节是Unicode的BOM(<a href="http://en.wikipedia.org/wiki/Byte_order_mark">Byte order mark</a>), 用来标记UTF-16和UTF-32编码文件的字节序, UTF-8并不需要. 但因为这个文件我曾经用Windows的记事本保存过, 它自作聪明地加了个BOM, 而Vim识别到文件有BOM就会自动打开bomb这个选项(具体解释请看Vim中bomb和fileencodings的帮助), so…</p>
 
@@ -144,7 +135,7 @@ ESC]2;stringBEL -- Set window title to string
     <h1><a href="/blog/2011/01/use-vim-to-resolve-svn-conflicts/">用vim处理svn的conflicts</a></h1>
 
     <div class="content">
-      <p>半年之前就用vimdiff取代了svn的diff(<a href="http://adam8157.info/blog/2010/05/svn-diff/">传送门</a>), 但是冲突处理没能用vim实现, 一直耿耿于怀, 这几天终于忍不住收拾了下.</p>
+      <p>半年之前就用vimdiff取代了svn的diff(<a href="https://adam8157.github.io/blog/2010/05/svn-diff/">传送门</a>), 但是冲突处理没能用vim实现, 一直耿耿于怀, 这几天终于忍不住收拾了下.</p>
 
 <p>svn处理merge是用的diff3, 顺利合并就返回0, 合并错误就给出选项询问如何解决. 传统的外部工具处理方式也是从这里hook, 比如kdiff3, 先合并, 顺利合并就往下走, 合并错误就出一个用于merging的界面给你编辑, 手动处理后返回0退出.</p>
 
@@ -349,7 +340,7 @@ exit 0
 
 <p>总之, 巴萨赢得痛快!</p>
 
-<p><img src="http://adam8157.info/uploads/2010/11/messi_and_ronaldo.jpg" alt="" /></p>
+<p><img src="https://adam8157.github.io/uploads/2010/11/messi_and_ronaldo.jpg" alt="" /></p>
 
 <p>PS: 虽然我是巴萨迷, 但是对皇马一直怀有敬意. 只是C罗, 人品也太差了吧, 场上丢人暂且不说, 这会儿, 估计又在埋怨队友没有给”世界第一”的他创造机会呢.</p>
 
@@ -370,7 +361,7 @@ exit 0
 
 <p>需要解释的是, 我弃用QQ和近期所谓的3Q大战并没有关系, 只是时间上赶巧了, 这次”参战”的流氓软件和流氓网站我都没有用.</p>
 
-<p>总之, QQ不用了, 联系方式在<a href="http://adam8157.info/about/">这里</a>. 我平时比较忙, 也不太健谈, 所以请尽量不要直接发Gtalk邀请, 有事儿就给我发邮件 : )</p>
+<p>总之, QQ不用了, 联系方式在<a href="https://adam8157.github.io/about/">这里</a>. 我平时比较忙, 也不太健谈, 所以请尽量不要直接发Gtalk邀请, 有事儿就给我发邮件 : )</p>
 
 <p>PS: QQ不提供注销功能, 但是可以像我一样把资料清空, 好友清空(拉黑再删可以从对方好友列表中消失), 密码和密码保护改成记不得的乱码, 这样过个几个月或者几年没登录, 号码也就被回收了, 世界也终究会归于清静.</p>
 
